@@ -158,6 +158,7 @@ def test_empate_entre_servicos_de_avaliacao_nao_pergunta_ao_cliente():
     assert c["objetivo"] == "avaliacao" and c["coletar"] is None
     assert "Limpeza química (contato com água)" in c["orientacao"]["possibilidades"]
     assert "nao colocar para carregar" in c["orientacao"]["detalhes"]["cuidados"]
+    assert "pode_ser" not in c["orientacao"]["detalhes"]
 
 
 def test_sintoma_casa_palavra_inteira_nao_pedaco():

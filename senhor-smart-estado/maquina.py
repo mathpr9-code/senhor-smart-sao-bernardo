@@ -413,6 +413,8 @@ def _detalhes(ctx: dict, sids: list[str]) -> dict:
     out: dict = {}
     for sid in sids:
         for k, v in ((_servico(ctx, sid) or {}).get("detalhes") or {}).items():
+            if k == "pode_ser" and len(sids) > 1:
+                continue        # varias possibilidades: o "pode ser" de uma nao vale para a outra
             if isinstance(v, list):
                 out[k] = list(dict.fromkeys(out.get(k, []) + v))
             else:

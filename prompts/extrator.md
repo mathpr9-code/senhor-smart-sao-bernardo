@@ -4,7 +4,7 @@ Nó: `Extrair Intenção` (HTTP → OpenRouter). Só lê a mensagem. Não decide
 
 | parâmetro | valor |
 |---|---|
-| model | `openai/gpt-5.4-mini` |
+| model | `openai/gpt-5.4-mini` (narrador continua no GPT-4.1-mini) |
 | reasoning_effort | `none` |
 | text.verbosity | `low` |
 | response_format | `json_schema` strict (arquivo `extrator.schema.json`) |
@@ -58,7 +58,7 @@ Escolha a que melhor descreve o objetivo principal do turno:
 - pedir_orcamento: quer saber se conserta, quanto custa ou quer resolver um defeito.
 - informar: responde a uma pergunta da atendente ou acrescenta dado do aparelho.
 - perguntar: dúvida sobre a loja (endereço, horário, pagamento, garantia, prazo).
-- objecao_preco: acha caro, compara com outro lugar, hesita pelo valor.
+- objecao: resiste a seguir (acha caro, achou mais barato, vai pesquisar, acha que não vale consertar, desconfia, medo de perder dados, precisa rápido, difícil ir até a loja). Preencha também o campo objecao.
 - confirmar_visita: diz que vai à loja ou combina dia/período ("passo amanhã", "sábado de manhã dá?").
 - pediu_humano: pede para falar com uma pessoa.
 - reclamacao: insatisfeito com um serviço já feito, garantia, cobrança.
@@ -74,6 +74,8 @@ Escolha a que melhor descreve o objetivo principal do turno:
 - visita_texto: quando/como o cliente disse que vai à loja, com as palavras dele ("amanhã de manhã"). Senão null.
 - sentimento: o tom da mensagem. "frustrado" quando já teve problema ou demora; "ansioso" quando tem pressa ou medo de perder dados; "irritado" quando reclama.
 - encerrar_conversa: true só quando o cliente encerra claramente.
+- objecao: o código do catálogo que melhor descreve a resistência, só quando intencao = objecao. "vou ver e te falo" depois de um orçamento é vou_pesquisar. "melhor comprar outro" é nao_vale_a_pena. Senão null.
+- impacto: o que o problema está custando para o cliente, nas palavras dele ("uso pra trabalhar", "tenho as fotos dos meus filhos", "estou sem falar com a família"). Só quando ele disser. Senão null.
 </campos_spec>
 
 <uncertainty_and_ambiguity>
@@ -109,9 +111,12 @@ Antes de finalizar:
 | "Não teve contato com agua" (estado: celular A52s) | informar, [{categoria celular, defeito "sem contato com água"}] |
 | "meu nome é Michele" | informar, nome_informado=Michele |
 | "Onde está localizado" | perguntar, perguntas=[endereco] |
-| "tá caro, na outra loja faz por 200" | objecao_preco, sentimento=frustrado |
+| "tá caro, na outra loja faz por 200" | objecao, objecao=comparou_concorrente, sentimento=frustrado |
+| "acho que não compensa, vou comprar outro" | objecao, objecao=nao_vale_a_pena |
+| "vou ver aqui e te falo" (depois do orçamento) | objecao, objecao=vou_pesquisar |
+| "preciso dele pra trabalhar amanhã" | informar ou objecao=prazo_urgente se resistir; impacto="precisa dele pra trabalhar" |
 | "Bom diaaaa" | saudacao, equipamentos=[] |
 | "quero um celular novo no boleto" | comprar_aparelho |
 | "meu PS5 não dá imagem" | pedir_orcamento, [{videogame, modelo "PS5", defeito "não dá imagem", servico_sugerido vg_hdmi}] |
 | "o notebook esquenta e meu iPhone 11 não carrega" | pedir_orcamento, 2 itens: [{notebook, defeito "esquenta"}, {celular, modelo "iPhone 11", defeito "não carrega"}] |
-| "Obrigado, vou ver e te aviso" | despedida, encerrar_conversa=true |
+| "Obrigado, tchau" | despedida, encerrar_conversa=true |

@@ -149,7 +149,16 @@ Payload do **Registrar Turno**: `{ metricas: <saída da máquina>.metricas, tele
 `conducao.resumo_encaminhamento` (cliente, origem, impacto, aparelhos com modelo/defeito/serviço/faixa, visita). Sem LLM.
 É o que evita a equipe ter que perguntar tudo de novo ao cliente.
 
-## 4. Fluxos agendados
+## 4. Painel ao vivo e resumo do dia
+
+| fluxo n8n | o que faz |
+|---|---|
+| **Painel Senhor Smart (link ao vivo)** (ICmnX89COToBjGBg, ativo) | `GET /webhook/painel-senhor-smart?t=<token>&dias=7\|30\|90` → `senhor_smart_at.painel()` → página HTML (`n8n/painel/montar_painel.js`). `&teste=1` inclui as conversas de teste. O token fica só no nó **Ler filtros** (não vai para o git); para trocar, edite ali. Só números agregados: sem nome, telefone ou conversa. |
+| **Resumo do dia Senhor Smart (WhatsApp)** (JevxKDCarr0gVgdo) | seg a sáb 19:05 (America/Sao_Paulo) → `v1_resumo_dia()` → `n8n/resumo_dia.js` → DeskRio. Preencher **DESTINO** e **CONEXAO** (connectionId) no nó **Config** e ativar. "Testar agora" inclui as conversas de teste. |
+
+`sql/at/11_painel_resumo_teste.sql`: `painel(…, p_incluir_teste)` e `v1_resumo_dia(dia, p_incluir_teste)`; as assinaturas antigas continuam e chamam com `false`.
+
+## 4b. Fluxos agendados (pendentes)
 
 | fluxo | gatilho | nós |
 |---|---|---|

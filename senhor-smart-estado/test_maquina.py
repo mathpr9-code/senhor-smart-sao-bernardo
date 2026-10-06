@@ -17,6 +17,7 @@ DOMINGO_22H = "2026-10-04T22:00:00-03:00"
 
 
 def turno(leitura, estado=None, agora=TERCA_10H, **extra):
+    extra.setdefault("nome_whatsapp", "Michele Souza")
     return processar({"ticket_id": 1, "estado": estado, "leitura": leitura, "contexto_dados": CTX,
                       "agora": agora, **extra})
 
@@ -68,10 +69,12 @@ def test_caso_michele_a52s_cota_no_segundo_turno():
     )
     c1 = t1["conducao"]
     assert c1["saudar"] and c1["apresentar_ia"] == "Sofia"
+    assert c1["periodo"] == "bom_dia" and c1["usar_nome"] == "Michele"
     assert c1["coletar"]["dado"] == "defeito"
     c2 = t2["conducao"]
     assert c2["movimento"] == "recommend_next" and c2["objetivo"] == "orcamento"
-    assert c2["orientacao"]["faixa"] == "entre R$ 280 e R$ 650"
+    assert c2["orientacao"]["faixa"] == {"min": 280, "max": 650}
+    assert c2["orientacao"]["detalhes"]["pode_ser"] == ["tela", "placa"]
     assert c2["orientacao"]["valor_final_na_avaliacao"] is True
     assert c2["convidar_visita"] and "endereco" in c2["visita"]
     assert not c2["saudar"]
@@ -95,7 +98,7 @@ def test_pergunta_direta_e_respondida_antes_de_conduzir():
     """Bug real (ticket 67568313): perguntou o endereco e recebeu 'como voce se chama?'."""
     c = turno({"intencao": "perguntar", "perguntas": ["endereco"], "equipamentos": []})["conducao"]
     assert c["responder"][0]["pergunta"] == "endereco"
-    assert "João Firmino" in c["responder"][0]["fato"]
+    assert "João Firmino" in c["responder"][0]["dado"]
     assert c["coletar"]["dado"] == "equipamento"
 
 
@@ -140,7 +143,7 @@ def test_equipamento_nao_atendido_avisa_uma_vez():
 def test_notebook_dispensa_modelo():
     c = turno({"intencao": "pedir_orcamento",
                "equipamentos": [eq(categoria="notebook", defeito="teclado com teclas falhando")]})["conducao"]
-    assert c["orientacao"]["faixa"] == "entre R$ 180 e R$ 450"
+    assert c["orientacao"]["faixa"] == {"min": 180, "max": 450}
 
 
 def test_servico_que_exige_avaliacao_nao_recebe_preco():
@@ -154,7 +157,7 @@ def test_empate_entre_servicos_de_avaliacao_nao_pergunta_ao_cliente():
                "equipamentos": [eq(categoria="celular", modelo="iphone 12", defeito="caiu na piscina e nao liga")]})["conducao"]
     assert c["objetivo"] == "avaliacao" and c["coletar"] is None
     assert "Limpeza química (contato com água)" in c["orientacao"]["possibilidades"]
-    assert "não carregar" in c["orientacao"]["observacao"]
+    assert "nao colocar para carregar" in c["orientacao"]["detalhes"]["cuidados"]
 
 
 def test_sintoma_casa_palavra_inteira_nao_pedaco():
@@ -189,7 +192,7 @@ def test_foto_completa_modelo_e_defeito():
                     "danos": ["tela trincada"], "descricao": "Celular com a tela trincada no canto"})
     c = r["conducao"]
     assert c["orientacao"]["modelo"] == "Galaxy A32"
-    assert c["orientacao"]["faixa"] == "entre R$ 280 e R$ 650"
+    assert c["orientacao"]["faixa"] == {"min": 280, "max": 650}
     assert r["metricas"]["foto"] is True
 
 
@@ -198,8 +201,8 @@ def test_cliente_corrige_modelo_depois_do_orcamento_recota():
         {"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="celular", modelo="a15", defeito="tela quebrada")]},
         {"intencao": "informar", "equipamentos": [eq(categoria="celular", modelo="iphone 14")]},
     )
-    assert t1["conducao"]["orientacao"]["faixa"] == "entre R$ 180 e R$ 350"
-    assert t2["conducao"]["orientacao"]["faixa"] == "entre R$ 1.000 e R$ 2.400"
+    assert t1["conducao"]["orientacao"]["faixa"] == {"min": 180, "max": 350}
+    assert t2["conducao"]["orientacao"]["faixa"] == {"min": 1000, "max": 2400}
 
 
 # --- Conducao: visita, objecao, despedida, transferencias -----------------------
@@ -224,8 +227,10 @@ def test_objecao_de_preco_acolhe_sem_insistir():
     )
     assert t2["conducao"]["movimento"] == "explain" and t2["conducao"]["acolher"]
     assert t2["conducao"]["objecao"]["primeira_vez"] is True
+    assert t2["conducao"]["objecao"]["orcamento"]["faixa"] == {"min": 150, "max": 280}
     assert t3["conducao"]["objecao"]["primeira_vez"] is False
-    assert t3["conducao"]["objecao"]["insistir"] is False
+    assert t3["conducao"]["objecao"]["proximo_passo"] == "deixar_porta_aberta"
+    assert t3["conducao"]["convidar_visita"] is False
 
 
 def test_despedida_encerra_sem_empurrar_visita():
@@ -256,7 +261,8 @@ def test_nome_so_em_confirmacao_e_despedida():
         {"intencao": "informar", "nome_informado": "Jossemar", "equipamentos": [eq(categoria="celular")]},
         {"intencao": "informar", "equipamentos": [eq(categoria="celular", defeito="nao carrega")]},
     )
-    assert t1["conducao"]["usar_nome"] is None and t2["conducao"]["usar_nome"] is None
+    assert t1["conducao"]["usar_nome"] == "Jossemar" and t1["conducao"]["nome_recem_informado"]
+    assert t2["conducao"]["usar_nome"] is None
     assert t2["estado_novo"]["cliente"]["nome"] == "Jossemar"
 
 
@@ -284,7 +290,7 @@ def test_visita_fora_do_horario_informa_proxima_abertura():
         agora=DOMINGO_22H,
     )
     assert t2["conducao"]["visita"]["loja_aberta_agora"] is False
-    assert t2["conducao"]["visita"]["proxima_abertura"] == "amanhã às 08h30"
+    assert t2["conducao"]["visita"]["proxima_abertura"] == {"dia": "amanha", "hora": "08:30"}
 
 
 def test_duplicata_por_texto_e_data_crus():
@@ -317,7 +323,10 @@ def test_followup_nao_dispara_fora_do_horario_nem_depois_de_agendar():
         {"intencao": "confirmar_visita", "visita_texto": "sábado"})[-1]["estado_novo"]
     r = decidir_followup({"estado": agendado, "contexto_dados": CTX, "agora": "2026-10-07T10:00:00-03:00",
                           "ultima_msg_cliente_em": "2026-10-06T13:00:00-03:00"})
-    assert r["enviar"] is False
+    assert r["tipo"] == "lembrete_visita"                     # agendado: so o lembrete da visita, nunca reengajar
+    r2 = decidir_followup({"estado": r["estado_novo"], "contexto_dados": CTX, "agora": "2026-10-10T10:00:00-03:00",
+                           "ultima_msg_cliente_em": "2026-10-06T13:00:00-03:00"})
+    assert r2["enviar"] is False
 
 
 # --- HTTP -----------------------------------------------------------------------
@@ -328,3 +337,96 @@ def test_endpoints_http():
     r = cli.post("/processar", json={"ticket_id": 7, "leitura": {"intencao": "saudacao"}, "contexto_dados": CTX,
                                      "agora": TERCA_10H})
     assert r.status_code == 200 and set(r.json()) == {"estado_novo", "conducao", "metricas"}
+
+
+# --- v1.1: nome, objecoes, so dado ---------------------------------------------
+
+@pytest.mark.parametrize("nome", ["😎", "5511999990000", "~", ".", "Cliente", None])
+def test_nome_do_whatsapp_invalido_pergunta_o_nome_antes(nome):
+    c = turno({"intencao": "pedir_orcamento", "perguntas": ["endereco"],
+               "equipamentos": [eq(categoria="celular", defeito="tela quebrada")]}, nome_whatsapp=nome)["conducao"]
+    assert c["objetivo"] == "perguntar_nome" and c["coletar"]["dado"] == "nome"
+    assert c["usar_nome"] is None
+    assert c["responder"][0]["pergunta"] == "endereco"          # pergunta direta respondida no mesmo turno
+    assert c["equipamento_ja_citado"]["equipamento"] == "Celular"  # o que o cliente contou nao se perde
+
+
+def test_depois_do_nome_segue_de_onde_parou():
+    t1, t2 = (turno({"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="celular", defeito="tela quebrada")]},
+                    nome_whatsapp="🔥"),) * 2
+    t2 = turno({"intencao": "informar", "nome_informado": "Michele"}, t1["estado_novo"], nome_whatsapp="🔥")
+    c = t2["conducao"]
+    assert c["usar_nome"] == "Michele" and c["nome_recem_informado"] is True
+    assert c["coletar"]["dado"] == "modelo" and not c["saudar"]
+
+
+def test_nome_so_e_perguntado_uma_vez():
+    t1 = turno({"intencao": "saudacao"}, nome_whatsapp="😎")
+    t2 = turno({"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="notebook", defeito="teclado falhando")]},
+               t1["estado_novo"], nome_whatsapp="😎")
+    assert t2["conducao"]["objetivo"] == "orcamento"
+
+
+def test_vou_pesquisar_deixa_porta_aberta_sem_afirmar_fato_nao_confirmado():
+    t1, t2 = conversa(
+        {"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="celular", modelo="a15", defeito="tela quebrada")]},
+        {"intencao": "objecao", "objecao": "vou_pesquisar"},
+    )
+    o = t2["conducao"]["objecao"]
+    chaves = {a["chave"] for a in o["argumentos"]}
+    assert o["proximo_passo"] == "deixar_porta_aberta" and o["explorar"] == "o_que_falta_saber"
+    assert "avaliacao_sem_custo" not in chaves                 # nao confirmado pelo dono: fica de fora
+    assert "valor_final_na_avaliacao" in chaves
+
+
+def test_nao_vale_a_pena_oferece_compra_na_propria_loja():
+    t1, t2 = conversa(
+        {"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="celular", modelo="iphone 11", defeito="tela quebrada")]},
+        {"intencao": "objecao", "objecao": "nao_vale_a_pena", "impacto": "é o celular que uso pra trabalhar"},
+    )
+    c = t2["conducao"]
+    assert c["objecao"]["proximo_passo"] == "oferecer_compra"
+    assert "boleto" in c["oferecer_compra"]["venda_aparelhos"]
+    assert c["objecao"]["desejo"]["impacto_relatado"] == "é o celular que uso pra trabalhar"
+    assert c["deve_transferir"] is False
+
+
+def test_impacto_relatado_vira_desejo_na_orientacao():
+    c = turno({"intencao": "pedir_orcamento", "impacto": "estou sem falar com meus clientes",
+               "equipamentos": [eq(categoria="celular", modelo="g54", defeito="nao carrega")]})["conducao"]
+    assert c["orientacao"]["desejo"]["impacto_relatado"] == "estou sem falar com meus clientes"
+
+
+def _strings(x):
+    if isinstance(x, dict):
+        for v in x.values():
+            yield from _strings(v)
+    elif isinstance(x, list):
+        for v in x:
+            yield from _strings(v)
+    elif isinstance(x, str):
+        yield x
+
+
+def test_conducao_nao_carrega_frase_pronta_de_preco_nem_de_horario():
+    """ADR-0013: o narrador e literal; a maquina entrega dado, nao frase."""
+    saidas = conversa(
+        {"intencao": "pedir_orcamento", "perguntas": ["preco", "horario"],
+         "equipamentos": [eq(categoria="celular", modelo="a52s", defeito="tela nao acende")]},
+        {"intencao": "objecao", "objecao": "preco_alto"},
+        {"intencao": "confirmar_visita", "visita_texto": "amanhã cedo"},
+        agora=DOMINGO_22H,
+    )
+    for s in saidas:
+        for txt in _strings(s["conducao"]):
+            assert "R$" not in txt and " às " not in txt, txt
+
+
+def test_lembrete_de_visita_no_dia_seguinte():
+    agendado = conversa(
+        {"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="celular", modelo="a15", defeito="tela quebrada")]},
+        {"intencao": "confirmar_visita", "visita_texto": "amanhã de manhã"})[-1]["estado_novo"]
+    r = decidir_followup({"estado": agendado, "contexto_dados": CTX, "agora": "2026-10-07T09:00:00-03:00"})
+    assert r["enviar"] and r["tipo"] == "lembrete_visita" and r["estado_novo"]["lembrete_visita_enviado"]
+    r2 = decidir_followup({"estado": r["estado_novo"], "contexto_dados": CTX, "agora": "2026-10-07T15:00:00-03:00"})
+    assert r2["enviar"] is False

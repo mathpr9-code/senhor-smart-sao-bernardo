@@ -5,13 +5,19 @@
   "nome_loja": "Senhor Smart",
   "horario_texto": "segunda a sexta das 8h30 às 18h30, sábado das 8h30 às 16h30",
   "venda_aparelhos": "também vendemos celulares Android no boleto parcelado, com entrada a partir de R$ 240",
-  "garantia_servico": "90 dias de garantia no serviço"
+  "garantia_servico": "90 dias de garantia no serviço",
+  "venda_sem_consulta_spc": "na compra de aparelho no boleto, a análise é na hora e sem consulta a SPC ou Serasa",
+  "referencia_local": "a loja fica dentro do Posto Shell da Av. João Firmino, fácil de achar e de estacionar"
  },
  "loja_a_confirmar": [
   "diagnostico",
   "formas_pagamento",
   "prazo_padrao",
-  "leva_e_traz"
+  "leva_e_traz",
+  "avaliacao_sem_custo",
+  "aprovacao_antes_do_conserto",
+  "dados_preservados",
+  "conserto_na_frente"
  ],
  "filas": {
   "tecnico": "64000384",
@@ -480,7 +486,13 @@
    ],
    "prazo": "mesmo dia, se houver peça em estoque",
    "exige_diagnostico": false,
-   "observacao": "Tela que não acende após queda pode ser display ou placa: confirmado na avaliação."
+   "detalhes": {
+    "pode_ser": [
+     "tela",
+     "placa"
+    ],
+    "confirmado_na": "avaliacao"
+   }
   },
   {
    "id": "cel_bateria",
@@ -496,7 +508,7 @@
    ],
    "prazo": "cerca de 1 hora",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "cel_conector",
@@ -511,7 +523,13 @@
    ],
    "prazo": "cerca de 1 hora",
    "exige_diagnostico": false,
-   "observacao": "Às vezes é só sujeira no conector: limpeza resolve."
+   "detalhes": {
+    "alternativa_simples": "limpeza do conector",
+    "pode_ser": [
+     "sujeira no conector",
+     "conector danificado"
+    ]
+   }
   },
   {
    "id": "cel_camera",
@@ -526,7 +544,7 @@
    ],
    "prazo": "mesmo dia",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "cel_vidro_traseiro",
@@ -540,7 +558,7 @@
    ],
    "prazo": "mesmo dia",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "cel_audio",
@@ -555,7 +573,7 @@
    ],
    "prazo": "mesmo dia",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "cel_agua",
@@ -577,7 +595,14 @@
    ],
    "prazo": "24 a 72h",
    "exige_diagnostico": true,
-   "observacao": "Desligar o aparelho e não carregar até a avaliação."
+   "detalhes": {
+    "cuidados": [
+     "manter desligado",
+     "nao colocar para carregar",
+     "nao usar arroz"
+    ],
+    "urgencia": "quanto antes melhor"
+   }
   },
   {
    "id": "cel_placa",
@@ -593,7 +618,14 @@
    ],
    "prazo": "avaliação em até 48h",
    "exige_diagnostico": true,
-   "observacao": null
+   "detalhes": {
+    "pode_ser": [
+     "placa",
+     "bateria",
+     "conector"
+    ],
+    "confirmado_na": "avaliacao"
+   }
   },
   {
    "id": "cel_software",
@@ -609,7 +641,11 @@
    ],
    "prazo": "cerca de 2 horas",
    "exige_diagnostico": false,
-   "observacao": "Backup dos dados antes, quando possível."
+   "detalhes": {
+    "cuidados": [
+     "backup antes, quando possivel"
+    ]
+   }
   },
   {
    "id": "tab_tela",
@@ -624,7 +660,7 @@
    ],
    "prazo": "1 a 3 dias",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "tab_bateria",
@@ -637,7 +673,7 @@
    ],
    "prazo": "1 a 2 dias",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "nb_tela",
@@ -654,7 +690,7 @@
    ],
    "prazo": "1 a 3 dias",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "nb_teclado",
@@ -667,7 +703,7 @@
    ],
    "prazo": "1 a 3 dias",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "nb_bateria",
@@ -680,7 +716,7 @@
    ],
    "prazo": "1 a 3 dias",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "nb_limpeza",
@@ -696,7 +732,7 @@
    ],
    "prazo": "mesmo dia",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "nb_ssd",
@@ -711,7 +747,13 @@
    ],
    "prazo": "mesmo dia",
    "exige_diagnostico": false,
-   "observacao": "Inclui SSD de 240GB a 480GB e clonagem do sistema."
+   "detalhes": {
+    "inclui": [
+     "SSD de 240GB a 480GB",
+     "transferencia do sistema e arquivos"
+    ],
+    "beneficio": "liga e abre programas bem mais rapido"
+   }
   },
   {
    "id": "nb_formatacao",
@@ -726,7 +768,7 @@
    ],
    "prazo": "1 dia",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "nb_conector",
@@ -740,7 +782,7 @@
    ],
    "prazo": "1 a 2 dias",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "nb_placa",
@@ -755,7 +797,13 @@
    ],
    "prazo": "avaliação em até 72h",
    "exige_diagnostico": true,
-   "observacao": null
+   "detalhes": {
+    "cuidados": [
+     "manter desligado",
+     "nao ligar na tomada"
+    ],
+    "confirmado_na": "avaliacao"
+   }
   },
   {
    "id": "vg_limpeza",
@@ -770,7 +818,9 @@
    ],
    "prazo": "mesmo dia",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {
+    "beneficio": "menos barulho e menos aquecimento"
+   }
   },
   {
    "id": "vg_hdmi",
@@ -784,7 +834,14 @@
    ],
    "prazo": "1 a 2 dias",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {
+    "pode_ser": [
+     "porta HDMI",
+     "cabo",
+     "chip de video"
+    ],
+    "confirmado_na": "avaliacao"
+   }
   },
   {
    "id": "vg_controle",
@@ -800,7 +857,7 @@
    ],
    "prazo": "mesmo dia",
    "exige_diagnostico": false,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "vg_leitor",
@@ -814,7 +871,7 @@
    ],
    "prazo": "avaliação em até 72h",
    "exige_diagnostico": true,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "vg_placa",
@@ -828,7 +885,7 @@
    ],
    "prazo": "avaliação em até 72h",
    "exige_diagnostico": true,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "sw_reparo",
@@ -842,7 +899,7 @@
    ],
    "prazo": "avaliação na loja",
    "exige_diagnostico": true,
-   "observacao": null
+   "detalhes": {}
   },
   {
    "id": "pc_manutencao",
@@ -856,7 +913,7 @@
    ],
    "prazo": "avaliação na loja",
    "exige_diagnostico": true,
-   "observacao": null
+   "detalhes": {}
   }
  ],
  "precos": [
@@ -1218,6 +1275,201 @@
    "padrao": "%indica%",
    "canal": "indicacao",
    "campanha": "Indicação"
+  }
+ ],
+ "objecoes": [
+  {
+   "codigo": "preco_alto",
+   "nome": "Achou caro",
+   "por_tras": [
+    "nao_entendeu_o_que_inclui",
+    "comparando_com_outro_lugar",
+    "sem_dinheiro_agora",
+    "acha_que_nao_compensa"
+   ],
+   "explorar": "o_que_pesa_mais",
+   "argumentos": [
+    "faixa_inclui_peca_e_mao_de_obra",
+    "garantia_servico",
+    "valor_final_na_avaliacao",
+    "aprovacao_antes_do_conserto"
+   ],
+   "desejo": [
+    "aparelho_funcionando_de_novo",
+    "impacto_relatado"
+   ],
+   "nunca": [
+    "dar_desconto",
+    "inventar_promocao",
+    "desvalorizar_concorrente",
+    "insistir_duas_vezes"
+   ],
+   "proximo_passo": "convidar_avaliacao"
+  },
+  {
+   "codigo": "comparou_concorrente",
+   "nome": "Achou mais barato em outro lugar",
+   "por_tras": [
+    "peca_de_qualidade_diferente",
+    "sem_garantia_no_outro",
+    "quer_seguranca"
+   ],
+   "explorar": "o_que_esta_incluso_no_outro",
+   "argumentos": [
+    "garantia_servico",
+    "valor_final_na_avaliacao",
+    "referencia_local"
+   ],
+   "desejo": [
+    "seguranca_de_garantia",
+    "aparelho_funcionando_de_novo"
+   ],
+   "nunca": [
+    "falar_mal_do_concorrente",
+    "prometer_cobrir_preco",
+    "dar_desconto"
+   ],
+   "proximo_passo": "convidar_avaliacao"
+  },
+  {
+   "codigo": "vou_pesquisar",
+   "nome": "Vai pesquisar / vai pensar",
+   "por_tras": [
+    "inseguranca_sobre_valor",
+    "falta_informacao",
+    "quer_comparar",
+    "sem_tempo_agora"
+   ],
+   "explorar": "o_que_falta_saber",
+   "argumentos": [
+    "valor_final_na_avaliacao",
+    "avaliacao_sem_custo",
+    "horario_texto"
+   ],
+   "desejo": [
+    "impacto_relatado"
+   ],
+   "nunca": [
+    "pressionar",
+    "criar_urgencia_falsa",
+    "insistir_duas_vezes"
+   ],
+   "proximo_passo": "deixar_porta_aberta"
+  },
+  {
+   "codigo": "nao_vale_a_pena",
+   "nome": "Acha que não vale consertar / prefere comprar outro",
+   "por_tras": [
+    "aparelho_antigo",
+    "conserto_caro_perto_do_novo",
+    "ja_queria_trocar"
+   ],
+   "explorar": "quanto_gosta_do_aparelho",
+   "argumentos": [
+    "faixa_inclui_peca_e_mao_de_obra",
+    "dados_preservados",
+    "venda_aparelhos",
+    "venda_sem_consulta_spc"
+   ],
+   "desejo": [
+    "manter_fotos_e_conversas",
+    "economia",
+    "aparelho_novo_no_boleto"
+   ],
+   "nunca": [
+    "empurrar_conserto",
+    "julgar_a_escolha"
+   ],
+   "proximo_passo": "oferecer_compra"
+  },
+  {
+   "codigo": "desconfianca",
+   "nome": "Medo de trocarem peça ou de não resolver",
+   "por_tras": [
+    "experiencia_ruim_antes",
+    "medo_de_golpe",
+    "medo_de_piorar"
+   ],
+   "explorar": "o_que_aconteceu_antes",
+   "argumentos": [
+    "garantia_servico",
+    "aprovacao_antes_do_conserto",
+    "conserto_na_frente",
+    "referencia_local"
+   ],
+   "desejo": [
+    "seguranca_de_garantia"
+   ],
+   "nunca": [
+    "minimizar_o_medo",
+    "prometer_resultado"
+   ],
+   "proximo_passo": "convidar_avaliacao"
+  },
+  {
+   "codigo": "medo_perder_dados",
+   "nome": "Medo de perder fotos e conversas",
+   "por_tras": [
+    "fotos_de_familia",
+    "trabalho_no_celular",
+    "privacidade"
+   ],
+   "explorar": null,
+   "argumentos": [
+    "dados_preservados"
+   ],
+   "desejo": [
+    "manter_fotos_e_conversas"
+   ],
+   "nunca": [
+    "prometer_que_nada_se_perde_sem_fato_confirmado"
+   ],
+   "proximo_passo": "convidar_avaliacao"
+  },
+  {
+   "codigo": "prazo_urgente",
+   "nome": "Precisa do aparelho rápido",
+   "por_tras": [
+    "trabalho",
+    "contato_com_familia",
+    "sem_outro_aparelho"
+   ],
+   "explorar": null,
+   "argumentos": [
+    "prazo_servico",
+    "horario_texto",
+    "loja_aberta_agora"
+   ],
+   "desejo": [
+    "aparelho_de_volta_hoje",
+    "impacto_relatado"
+   ],
+   "nunca": [
+    "prometer_prazo_fora_do_dado"
+   ],
+   "proximo_passo": "convidar_avaliacao"
+  },
+  {
+   "codigo": "sem_tempo_de_ir",
+   "nome": "Difícil ir até a loja",
+   "por_tras": [
+    "trabalha_no_horario",
+    "mora_longe",
+    "nao_conhece_o_local"
+   ],
+   "explorar": "melhor_dia_e_periodo",
+   "argumentos": [
+    "referencia_local",
+    "horario_texto",
+    "leva_e_traz"
+   ],
+   "desejo": [
+    "aparelho_funcionando_de_novo"
+   ],
+   "nunca": [
+    "prometer_leva_e_traz_sem_fato_confirmado"
+   ],
+   "proximo_passo": "convidar_avaliacao"
   }
  ]
 }

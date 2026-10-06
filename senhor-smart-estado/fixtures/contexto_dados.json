@@ -7,22 +7,26 @@
   "venda_aparelhos": "também vendemos celulares Android no boleto parcelado, com entrada a partir de R$ 240",
   "garantia_servico": "90 dias de garantia no serviço",
   "venda_sem_consulta_spc": "na compra de aparelho no boleto, a análise é na hora e sem consulta a SPC ou Serasa",
-  "referencia_local": "a loja fica dentro do Posto Shell da Av. João Firmino, fácil de achar e de estacionar"
+  "referencia_local": "a loja fica dentro do Posto Shell da Av. João Firmino, fácil de achar e de estacionar",
+  "avaliacao_sem_custo": "avaliação na loja sem custo, dentro do horário de funcionamento",
+  "aprovacao_antes_do_conserto": "o cliente aprova o valor antes de qualquer conserto",
+  "condicao_entrada": "240",
+  "condicao_parcelas_max": "18",
+  "condicao_meio": "boleto"
  },
  "loja_a_confirmar": [
   "diagnostico",
   "formas_pagamento",
   "prazo_padrao",
   "leva_e_traz",
-  "avaliacao_sem_custo",
-  "aprovacao_antes_do_conserto",
   "dados_preservados",
-  "conserto_na_frente"
+  "conserto_na_frente",
+  "faixa_inclui_peca_e_mao_de_obra"
  ],
  "filas": {
-  "tecnico": "64000384",
-  "vendas": "64000384",
-  "humano": "64000384"
+  "tecnico": "64000523",
+  "vendas": "64000523",
+  "humano": "64000523"
  },
  "horario": [
   {
@@ -922,301 +926,344 @@
    "linha": "entrada",
    "min": 180,
    "max": 350,
-   "validado": false
+   "validado": false,
+   "preco": 350
   },
   {
    "servico_id": "cel_tela",
    "linha": "intermediario",
    "min": 280,
    "max": 650,
-   "validado": false
+   "validado": false,
+   "preco": 650
   },
   {
    "servico_id": "cel_tela",
    "linha": "premium",
    "min": 700,
    "max": 1600,
-   "validado": false
+   "validado": false,
+   "preco": 1600
   },
   {
    "servico_id": "cel_tela",
    "linha": "apple_antigo",
    "min": 350,
    "max": 800,
-   "validado": false
+   "validado": false,
+   "preco": 800
   },
   {
    "servico_id": "cel_tela",
    "linha": "apple_medio",
    "min": 600,
    "max": 1300,
-   "validado": false
+   "validado": false,
+   "preco": 1300
   },
   {
    "servico_id": "cel_tela",
    "linha": "apple_recente",
    "min": 1000,
    "max": 2400,
-   "validado": false
+   "validado": false,
+   "preco": 2400
   },
   {
    "servico_id": "cel_bateria",
    "linha": "entrada",
    "min": 120,
    "max": 200,
-   "validado": false
+   "validado": false,
+   "preco": 200
   },
   {
    "servico_id": "cel_bateria",
    "linha": "intermediario",
    "min": 150,
    "max": 280,
-   "validado": false
+   "validado": false,
+   "preco": 280
   },
   {
    "servico_id": "cel_bateria",
    "linha": "premium",
    "min": 250,
    "max": 450,
-   "validado": false
+   "validado": false,
+   "preco": 450
   },
   {
    "servico_id": "cel_bateria",
    "linha": "apple_antigo",
    "min": 200,
    "max": 380,
-   "validado": false
+   "validado": false,
+   "preco": 380
   },
   {
    "servico_id": "cel_bateria",
    "linha": "apple_medio",
    "min": 280,
    "max": 480,
-   "validado": false
+   "validado": false,
+   "preco": 480
   },
   {
    "servico_id": "cel_bateria",
    "linha": "apple_recente",
    "min": 380,
    "max": 700,
-   "validado": false
+   "validado": false,
+   "preco": 700
   },
   {
    "servico_id": "cel_conector",
    "linha": "entrada",
    "min": 90,
    "max": 180,
-   "validado": false
+   "validado": false,
+   "preco": 180
   },
   {
    "servico_id": "cel_conector",
    "linha": "intermediario",
    "min": 120,
    "max": 250,
-   "validado": false
+   "validado": false,
+   "preco": 250
   },
   {
    "servico_id": "cel_conector",
    "linha": "premium",
    "min": 200,
    "max": 400,
-   "validado": false
+   "validado": false,
+   "preco": 400
   },
   {
    "servico_id": "cel_conector",
    "linha": "apple_antigo",
    "min": 200,
    "max": 350,
-   "validado": false
+   "validado": false,
+   "preco": 350
   },
   {
    "servico_id": "cel_conector",
    "linha": "apple_medio",
    "min": 250,
    "max": 450,
-   "validado": false
+   "validado": false,
+   "preco": 450
   },
   {
    "servico_id": "cel_conector",
    "linha": "apple_recente",
    "min": 300,
    "max": 550,
-   "validado": false
+   "validado": false,
+   "preco": 550
   },
   {
    "servico_id": "cel_camera",
    "linha": "entrada",
    "min": 120,
    "max": 250,
-   "validado": false
+   "validado": false,
+   "preco": 250
   },
   {
    "servico_id": "cel_camera",
    "linha": "intermediario",
    "min": 180,
    "max": 400,
-   "validado": false
+   "validado": false,
+   "preco": 400
   },
   {
    "servico_id": "cel_camera",
    "linha": "premium",
    "min": 300,
    "max": 800,
-   "validado": false
+   "validado": false,
+   "preco": 800
   },
   {
    "servico_id": "cel_camera",
    "linha": "apple_antigo",
    "min": 300,
    "max": 600,
-   "validado": false
+   "validado": false,
+   "preco": 600
   },
   {
    "servico_id": "cel_camera",
    "linha": "apple_medio",
    "min": 400,
    "max": 800,
-   "validado": false
+   "validado": false,
+   "preco": 800
   },
   {
    "servico_id": "cel_camera",
    "linha": "apple_recente",
    "min": 500,
    "max": 1100,
-   "validado": false
+   "validado": false,
+   "preco": 1100
   },
   {
    "servico_id": "cel_vidro_traseiro",
    "linha": null,
    "min": 120,
    "max": 450,
-   "validado": false
+   "validado": false,
+   "preco": 450
   },
   {
    "servico_id": "cel_audio",
    "linha": null,
    "min": 90,
    "max": 250,
-   "validado": false
+   "validado": false,
+   "preco": 250
   },
   {
    "servico_id": "cel_software",
    "linha": null,
    "min": 60,
    "max": 120,
-   "validado": false
+   "validado": false,
+   "preco": 120
   },
   {
    "servico_id": "tab_tela",
    "linha": null,
    "min": 300,
    "max": 900,
-   "validado": false
+   "validado": false,
+   "preco": 900
   },
   {
    "servico_id": "tab_tela",
    "linha": "premium",
    "min": 700,
    "max": 1800,
-   "validado": false
+   "validado": false,
+   "preco": 1800
   },
   {
    "servico_id": "tab_bateria",
    "linha": null,
    "min": 200,
    "max": 400,
-   "validado": false
+   "validado": false,
+   "preco": 400
   },
   {
    "servico_id": "nb_tela",
    "linha": "padrao",
    "min": 350,
    "max": 900,
-   "validado": false
+   "validado": false,
+   "preco": 900
   },
   {
    "servico_id": "nb_tela",
    "linha": "premium",
    "min": 1500,
    "max": 4000,
-   "validado": false
+   "validado": false,
+   "preco": 4000
   },
   {
    "servico_id": "nb_teclado",
    "linha": "padrao",
    "min": 180,
    "max": 450,
-   "validado": false
+   "validado": false,
+   "preco": 450
   },
   {
    "servico_id": "nb_teclado",
    "linha": "premium",
    "min": 600,
    "max": 1500,
-   "validado": false
+   "validado": false,
+   "preco": 1500
   },
   {
    "servico_id": "nb_bateria",
    "linha": "padrao",
    "min": 250,
    "max": 600,
-   "validado": false
+   "validado": false,
+   "preco": 600
   },
   {
    "servico_id": "nb_bateria",
    "linha": "premium",
    "min": 700,
    "max": 1500,
-   "validado": false
+   "validado": false,
+   "preco": 1500
   },
   {
    "servico_id": "nb_limpeza",
    "linha": null,
    "min": 120,
    "max": 250,
-   "validado": false
+   "validado": false,
+   "preco": 250
   },
   {
    "servico_id": "nb_ssd",
    "linha": null,
    "min": 250,
    "max": 600,
-   "validado": false
+   "validado": false,
+   "preco": 600
   },
   {
    "servico_id": "nb_formatacao",
    "linha": null,
    "min": 100,
    "max": 200,
-   "validado": false
+   "validado": false,
+   "preco": 200
   },
   {
    "servico_id": "nb_conector",
    "linha": null,
    "min": 150,
    "max": 300,
-   "validado": false
+   "validado": false,
+   "preco": 300
   },
   {
    "servico_id": "vg_limpeza",
    "linha": null,
    "min": 150,
    "max": 300,
-   "validado": false
+   "validado": false,
+   "preco": 300
   },
   {
    "servico_id": "vg_hdmi",
    "linha": null,
    "min": 250,
    "max": 500,
-   "validado": false
+   "validado": false,
+   "preco": 500
   },
   {
    "servico_id": "vg_controle",
    "linha": null,
    "min": 100,
    "max": 200,
-   "validado": false
+   "validado": false,
+   "preco": 200
   }
  ],
  "origem_regra": [
@@ -1289,10 +1336,11 @@
    ],
    "explorar": "o_que_pesa_mais",
    "argumentos": [
-    "faixa_inclui_peca_e_mao_de_obra",
+    "condicao_pagamento",
     "garantia_servico",
-    "valor_final_na_avaliacao",
-    "aprovacao_antes_do_conserto"
+    "avaliacao_sem_custo",
+    "aprovacao_antes_do_conserto",
+    "faixa_inclui_peca_e_mao_de_obra"
    ],
    "desejo": [
     "aparelho_funcionando_de_novo",
@@ -1317,7 +1365,8 @@
    "explorar": "o_que_esta_incluso_no_outro",
    "argumentos": [
     "garantia_servico",
-    "valor_final_na_avaliacao",
+    "aprovacao_antes_do_conserto",
+    "condicao_pagamento",
     "referencia_local"
    ],
    "desejo": [
@@ -1342,8 +1391,8 @@
    ],
    "explorar": "o_que_falta_saber",
    "argumentos": [
-    "valor_final_na_avaliacao",
     "avaliacao_sem_custo",
+    "condicao_pagamento",
     "horario_texto"
    ],
    "desejo": [
@@ -1366,7 +1415,7 @@
    ],
    "explorar": "quanto_gosta_do_aparelho",
    "argumentos": [
-    "faixa_inclui_peca_e_mao_de_obra",
+    "condicao_pagamento",
     "dados_preservados",
     "venda_aparelhos",
     "venda_sem_consulta_spc"
@@ -1392,8 +1441,9 @@
    ],
    "explorar": "o_que_aconteceu_antes",
    "argumentos": [
-    "garantia_servico",
     "aprovacao_antes_do_conserto",
+    "avaliacao_sem_custo",
+    "garantia_servico",
     "conserto_na_frente",
     "referencia_local"
    ],

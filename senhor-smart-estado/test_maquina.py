@@ -73,9 +73,10 @@ def test_caso_michele_a52s_cota_no_segundo_turno():
     assert c1["coletar"]["dado"] == "defeito"
     c2 = t2["conducao"]
     assert c2["movimento"] == "recommend_next" and c2["objetivo"] == "orcamento"
-    assert c2["orientacao"]["faixa"] == {"min": 280, "max": 650}
+    assert c2["orientacao"]["preco"] == 650
     assert c2["orientacao"]["detalhes"]["pode_ser"] == ["tela", "placa"]
-    assert c2["orientacao"]["valor_final_na_avaliacao"] is True
+    assert c2["orientacao"]["condicao_pagamento"] == {"entrada": 240.0, "parcelas_max": 18, "meio": "boleto"}
+    assert "sem custo" in c2["orientacao"]["avaliacao_sem_custo"]
     assert c2["convidar_visita"] and "endereco" in c2["visita"]
     assert not c2["saudar"]
     assert t2["metricas"]["etapa"] == "orcamento"
@@ -143,13 +144,13 @@ def test_equipamento_nao_atendido_avisa_uma_vez():
 def test_notebook_dispensa_modelo():
     c = turno({"intencao": "pedir_orcamento",
                "equipamentos": [eq(categoria="notebook", defeito="teclado com teclas falhando")]})["conducao"]
-    assert c["orientacao"]["faixa"] == {"min": 180, "max": 450}
+    assert c["orientacao"]["preco"] == 450
 
 
 def test_servico_que_exige_avaliacao_nao_recebe_preco():
     c = turno({"intencao": "pedir_orcamento",
                "equipamentos": [eq(categoria="celular", modelo="a15", defeito="caiu na agua e nao liga")]})["conducao"]
-    assert c["objetivo"] == "avaliacao" and c["orientacao"]["faixa"] is None
+    assert c["objetivo"] == "avaliacao" and c["orientacao"]["preco"] is None
 
 
 def test_empate_entre_servicos_de_avaliacao_nao_pergunta_ao_cliente():
@@ -193,7 +194,7 @@ def test_foto_completa_modelo_e_defeito():
                     "danos": ["tela trincada"], "descricao": "Celular com a tela trincada no canto"})
     c = r["conducao"]
     assert c["orientacao"]["modelo"] == "Galaxy A32"
-    assert c["orientacao"]["faixa"] == {"min": 280, "max": 650}
+    assert c["orientacao"]["preco"] == 650
     assert r["metricas"]["foto"] is True
 
 
@@ -202,8 +203,8 @@ def test_cliente_corrige_modelo_depois_do_orcamento_recota():
         {"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="celular", modelo="a15", defeito="tela quebrada")]},
         {"intencao": "informar", "equipamentos": [eq(categoria="celular", modelo="iphone 14")]},
     )
-    assert t1["conducao"]["orientacao"]["faixa"] == {"min": 180, "max": 350}
-    assert t2["conducao"]["orientacao"]["faixa"] == {"min": 1000, "max": 2400}
+    assert t1["conducao"]["orientacao"]["preco"] == 350
+    assert t2["conducao"]["orientacao"]["preco"] == 2400
 
 
 # --- Conducao: visita, objecao, despedida, transferencias -----------------------
@@ -215,7 +216,7 @@ def test_visita_combinada_transfere_com_resumo():
     )
     c = t2["conducao"]
     assert c["movimento"] == "confirm" and c["usar_nome"] == "Michele"
-    assert c["deve_transferir"] and c["transferir_para"] == "64000384"
+    assert c["deve_transferir"] and c["transferir_para"] == "64000523"
     assert c["resumo_encaminhamento"]["equipamentos"][0]["modelo"] == "Galaxy A52S"
     assert t2["metricas"]["etapa"] == "agendado" and t2["metricas"]["visita_texto"] == "amanhã de manhã"
 
@@ -228,7 +229,9 @@ def test_objecao_de_preco_acolhe_sem_insistir():
     )
     assert t2["conducao"]["movimento"] == "explain" and t2["conducao"]["acolher"]
     assert t2["conducao"]["objecao"]["primeira_vez"] is True
-    assert t2["conducao"]["objecao"]["orcamento"]["faixa"] == {"min": 150, "max": 280}
+    assert t2["conducao"]["objecao"]["orcamento"]["preco"] == 280
+    chaves = {a["chave"] for a in t2["conducao"]["objecao"]["argumentos"]}
+    assert "faixa_inclui_peca_e_mao_de_obra" not in chaves     # ainda nao confirmado: nunca vira argumento
     assert t3["conducao"]["objecao"]["primeira_vez"] is False
     assert t3["conducao"]["objecao"]["proximo_passo"] == "deixar_porta_aberta"
     assert t3["conducao"]["convidar_visita"] is False
@@ -376,8 +379,8 @@ def test_vou_pesquisar_deixa_porta_aberta_sem_afirmar_fato_nao_confirmado():
     o = t2["conducao"]["objecao"]
     chaves = {a["chave"] for a in o["argumentos"]}
     assert o["proximo_passo"] == "deixar_porta_aberta" and o["explorar"] == "o_que_falta_saber"
-    assert "avaliacao_sem_custo" not in chaves                 # nao confirmado pelo dono: fica de fora
-    assert "valor_final_na_avaliacao" in chaves
+    assert "avaliacao_sem_custo" in chaves                     # confirmado pelo dono em 06/10
+    assert "condicao_pagamento" in chaves
 
 
 def test_nao_vale_a_pena_oferece_compra_na_propria_loja():
@@ -431,3 +434,8 @@ def test_lembrete_de_visita_no_dia_seguinte():
     assert r["enviar"] and r["tipo"] == "lembrete_visita" and r["estado_novo"]["lembrete_visita_enviado"]
     r2 = decidir_followup({"estado": r["estado_novo"], "contexto_dados": CTX, "agora": "2026-10-07T15:00:00-03:00"})
     assert r2["enviar"] is False
+
+
+def test_servico_mais_barato_que_a_entrada_nao_leva_condicao_de_parcelamento():
+    c = turno({"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="celular", defeito="esta muito lento, travando")]})["conducao"]
+    assert c["orientacao"]["preco"] == 120 and c["orientacao"]["condicao_pagamento"] is None

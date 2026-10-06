@@ -35,7 +35,7 @@ from copy import deepcopy
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-VERSAO = "1.1.0"
+VERSAO = "1.2.0"
 TZ = ZoneInfo("America/Sao_Paulo")
 
 ETAPAS = ["novo", "triagem", "diagnostico", "orcamento", "agendado"]
@@ -132,7 +132,7 @@ def _novo_trabalho(estado: dict, categoria: str | None) -> dict:
         "servico_status": "insuficiente",    # resolvido | ambiguo | avaliacao | insuficiente
         "servico_fonte": None,
         "servico_opcoes": [],
-        "faixa": None,                       # {"min","max","validado"}
+        "preco": None,                       # {"valor","validado"}
         "cotado": False,                     # orcamento/avaliacao ja comunicado
         "perguntas": {},                     # dado -> quantas vezes perguntado
         "status": "pendente",                # pendente | cotado | fora | encerrado
@@ -170,7 +170,20 @@ def _cotar(ctx: dict, sid: str, linha: str | None) -> dict | None:
     p = exato or next((p for p in ps if p["linha"] is None), None)
     if not p:
         return None
-    return {"min": p["min"], "max": p["max"], "validado": bool(p.get("validado"))}
+    return {"valor": p.get("preco") or p["max"], "validado": bool(p.get("validado"))}
+
+
+def _condicao_pagamento(ctx: dict, preco) -> dict | None:
+    """Entrada + parcelas, como dado. So vale quando o servico custa mais que a entrada."""
+    loja = ctx.get("loja") or {}
+    try:
+        entrada = float(loja["condicao_entrada"])
+        parcelas = int(loja["condicao_parcelas_max"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if preco is not None and float(preco) <= entrada:
+        return None
+    return {"entrada": entrada, "parcelas_max": parcelas, "meio": loja.get("condicao_meio")}
 
 
 def _horario_loja(ctx: dict) -> list[dict]:
@@ -362,7 +375,7 @@ def _completar(t: dict, ctx: dict) -> None:
         t["linha"] = "padrao"
     resolver_servico(ctx, t)
     s = _servico(ctx, t["servico_id"])
-    t["faixa"] = _cotar(ctx, s["id"], t["linha"]) if s and not s["exige_diagnostico"] else None
+    t["preco"] = _cotar(ctx, s["id"], t["linha"]) if s and not s["exige_diagnostico"] else None
 
 
 # ---------------------------------------------------------------------------
@@ -423,7 +436,7 @@ def _detalhes(ctx: dict, sids: list[str]) -> dict:
 
 
 def _orientacao(t: dict, ctx: dict, estado: dict) -> dict:
-    """Dado para o narrador orientar o equipamento: faixa (numeros) ou avaliacao, detalhes e desejo."""
+    """Dado para o narrador orientar o equipamento: preco fixo + condicao, ou avaliacao; detalhes e desejo."""
     s = _servico(ctx, t["servico_id"])
     sids = [s["id"]] if s else list(t.get("servico_opcoes") or [])
     o = {"equipamento": (_categoria(ctx, t["categoria"]) or {}).get("nome"), "modelo": t["modelo"],
@@ -431,15 +444,17 @@ def _orientacao(t: dict, ctx: dict, estado: dict) -> dict:
          "servico": s["nome"] if s else None, "prazo": s["prazo"] if s else None,
          "detalhes": _detalhes(ctx, sids) or None,
          "desejo": {"impacto_relatado": estado.get("impacto"),
-                    "beneficio": _detalhes(ctx, sids).get("beneficio")}}
-    if t["faixa"]:
-        return {"tipo": "orcamento", **o, "faixa": {"min": t["faixa"]["min"], "max": t["faixa"]["max"]},
-                "valor_final_na_avaliacao": True}
+                    "beneficio": _detalhes(ctx, sids).get("beneficio")},
+         "avaliacao_sem_custo": _fato(ctx, "avaliacao_sem_custo"),
+         "aprovacao_antes_do_conserto": _fato(ctx, "aprovacao_antes_do_conserto")}
+    if t["preco"]:
+        return {"tipo": "orcamento", **o, "preco": t["preco"]["valor"],
+                "condicao_pagamento": _condicao_pagamento(ctx, t["preco"]["valor"])}
     if not s and t.get("servico_opcoes"):
         o["possibilidades"] = [_servico(ctx, sid)["nome"] for sid in t["servico_opcoes"] if _servico(ctx, sid)]
     motivo = ("servico_exige_avaliacao" if s and s["exige_diagnostico"]
               else "modelo_nao_identificado" if s else "defeito_precisa_de_avaliacao")
-    return {"tipo": "avaliacao", **o, "faixa": None, "motivo": motivo}
+    return {"tipo": "avaliacao", **o, "preco": None, "motivo": motivo}
 
 
 # ---------------------------------------------------------------------------
@@ -486,8 +501,8 @@ def _dados_visita(estado: dict, ctx: dict, horario: dict) -> dict:
 # Objecoes (dado da biblioteca + fatos autorizados; nunca resposta pronta)
 # ---------------------------------------------------------------------------
 def _argumento(chave: str, ctx: dict, estado: dict, foco: dict | None, horario: dict):
-    if chave == "valor_final_na_avaliacao":
-        return True
+    if chave == "condicao_pagamento":
+        return _condicao_pagamento(ctx, ((foco or {}).get("preco") or {}).get("valor"))
     if chave == "prazo_servico":
         s = _servico(ctx, (foco or {}).get("servico_id"))
         return s["prazo"] if s else None
@@ -699,7 +714,7 @@ def _resumo_trabalho(t: dict, ctx: dict) -> dict:
     s = _servico(ctx, t["servico_id"])
     return {"equipamento": (_categoria(ctx, t["categoria"]) or {}).get("nome"), "modelo": t["modelo"],
             "defeito": t["defeito"], "servico": s["nome"] if s else None,
-            "faixa": {"min": t["faixa"]["min"], "max": t["faixa"]["max"]} if t["faixa"] else None}
+            "preco": t["preco"]["valor"] if t["preco"] else None}
 
 
 # ---------------------------------------------------------------------------
@@ -758,9 +773,9 @@ def _metricas(estado: dict, c: dict, entrada: dict, eventos: list, duplicata: bo
         "linha": principal["linha"] if principal else None,
         "defeito": principal["defeito"] if principal else None,
         "servico_id": principal["servico_id"] if principal else None,
-        "faixa_min": principal["faixa"]["min"] if principal and principal["faixa"] else None,
-        "faixa_max": principal["faixa"]["max"] if principal and principal["faixa"] else None,
-        "preco_validado": principal["faixa"]["validado"] if principal and principal["faixa"] else None,
+        "faixa_min": principal["preco"]["valor"] if principal and principal["preco"] else None,   # preco fixo
+        "faixa_max": principal["preco"]["valor"] if principal and principal["preco"] else None,
+        "preco_validado": principal["preco"]["validado"] if principal and principal["preco"] else None,
         "equipamentos": len(ativos),
         "nome_cliente": estado["cliente"]["nome"],
         "visita_texto": (estado.get("visita") or {}).get("quando"),

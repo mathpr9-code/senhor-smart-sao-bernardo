@@ -70,6 +70,11 @@ def _ilike(texto: str, padrao: str) -> bool:
     return re.fullmatch(rx, _norm(texto), re.DOTALL) is not None
 
 
+def _tem_termo(texto_norm: str, termo: str) -> bool:
+    """Termo inteiro (palavra ou expressao), nunca pedaco de outra palavra: 'mar' nao casa 'marcar'."""
+    return re.search(r"(?<![a-z0-9])" + re.escape(_norm(termo)) + r"(?![a-z0-9])", texto_norm) is not None
+
+
 def _brl(v) -> str:
     return "R$ " + f"{int(round(float(v))):,}".replace(",", ".")
 
@@ -197,7 +202,7 @@ def resolver_servico(ctx: dict, trabalho: dict) -> None:
     texto = _norm(defeito + " " + " ".join(trabalho.get("danos_foto") or []))
     placar = []
     for s in candidatos:
-        n = sum(1 for x in s["sintomas"] if _norm(x) and _norm(x) in texto)
+        n = sum(1 for x in s["sintomas"] if _norm(x) and _tem_termo(texto, x))
         if n:
             placar.append((n, s["id"]))
     if placar:
@@ -207,6 +212,9 @@ def resolver_servico(ctx: dict, trabalho: dict) -> None:
             trabalho.update(servico_id=empatados[0], servico_status="resolvido", servico_fonte="sintoma", servico_opcoes=[])
         elif sugerido in empatados:
             trabalho.update(servico_id=sugerido, servico_status="resolvido", servico_fonte="sintoma+extrator", servico_opcoes=[])
+        elif all((_servico(ctx, sid) or {}).get("exige_diagnostico") for sid in empatados):
+            # empate entre servicos que exigem avaliacao de todo jeito: perguntar ao cliente nao ajuda
+            trabalho.update(servico_id=None, servico_status="avaliacao", servico_fonte="sintoma", servico_opcoes=empatados)
         else:
             trabalho.update(servico_id=None, servico_status="ambiguo", servico_fonte="sintoma", servico_opcoes=empatados[:3])
         return
@@ -399,6 +407,10 @@ def _orientacao(t: dict, ctx: dict) -> dict:
                 "valor_final_na_avaliacao": True}
     motivo = ("servico_exige_avaliacao" if s and s["exige_diagnostico"]
               else "modelo_nao_identificado" if s else "defeito_precisa_de_avaliacao")
+    if not s and t["servico_opcoes"]:
+        opcoes = [_servico(ctx, sid) for sid in t["servico_opcoes"]]
+        base["possibilidades"] = [o["nome"] for o in opcoes if o]
+        base["observacao"] = " ".join(o["observacao"] for o in opcoes if o and o.get("observacao")) or None
     return {"tipo": "avaliacao", **base, "faixa": None, "motivo": motivo}
 
 

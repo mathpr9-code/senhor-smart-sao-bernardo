@@ -1,0 +1,42 @@
+{
+  "name": "leitura_assistencia",
+  "strict": true,
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["intencao", "equipamentos", "perguntas", "nome_informado", "visita_texto", "sentimento", "encerrar_conversa"],
+    "properties": {
+      "intencao": {
+        "type": "string",
+        "enum": ["saudacao", "pedir_orcamento", "informar", "perguntar", "objecao_preco", "confirmar_visita",
+                 "pediu_humano", "reclamacao", "status_servico", "comprar_aparelho", "despedida", "outro"]
+      },
+      "equipamentos": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["categoria", "marca", "modelo", "defeito", "servico_sugerido", "evidencia"],
+          "properties": {
+            "categoria": {"type": ["string", "null"], "enum": ["__CATEGORIAS_DO_CATALOGO__", null]},
+            "marca": {"type": ["string", "null"]},
+            "modelo": {"type": ["string", "null"]},
+            "defeito": {"type": ["string", "null"]},
+            "servico_sugerido": {"type": ["string", "null"], "enum": ["__SERVICOS_DO_CATALOGO__", null]},
+            "evidencia": {"type": "string"}
+          }
+        }
+      },
+      "perguntas": {
+        "type": "array",
+        "items": {"type": "string", "enum": ["preco", "endereco", "horario", "pagamento", "garantia", "prazo",
+                                             "diagnostico", "leva_e_traz", "outra"]}
+      },
+      "nome_informado": {"type": ["string", "null"]},
+      "visita_texto": {"type": ["string", "null"]},
+      "sentimento": {"type": "string", "enum": ["neutro", "positivo", "ansioso", "frustrado", "irritado"]},
+      "encerrar_conversa": {"type": "boolean"}
+    }
+  },
+  "_nota": "No n8n, troque os marcadores __CATEGORIAS_DO_CATALOGO__ e __SERVICOS_DO_CATALOGO__ pela lista vinda de v1_catalogo_extrator() (categorias e servicos), mantendo null no enum. Remova esta chave _nota."
+}

@@ -149,6 +149,20 @@ def test_servico_que_exige_avaliacao_nao_recebe_preco():
     assert c["objetivo"] == "avaliacao" and c["orientacao"]["faixa"] is None
 
 
+def test_empate_entre_servicos_de_avaliacao_nao_pergunta_ao_cliente():
+    c = turno({"intencao": "pedir_orcamento",
+               "equipamentos": [eq(categoria="celular", modelo="iphone 12", defeito="caiu na piscina e nao liga")]})["conducao"]
+    assert c["objetivo"] == "avaliacao" and c["coletar"] is None
+    assert "Limpeza química (contato com água)" in c["orientacao"]["possibilidades"]
+    assert "não carregar" in c["orientacao"]["observacao"]
+
+
+def test_sintoma_casa_palavra_inteira_nao_pedaco():
+    r = turno({"intencao": "pedir_orcamento", "equipamentos": [
+        eq(categoria="celular", modelo="a15", defeito="quero marcar pra trocar a tela")]})
+    assert r["estado_novo"]["trabalhos"][0]["servico_id"] == "cel_tela"   # 'mar' (agua) nao casou em 'marcar'
+
+
 def test_sintomas_empatados_viram_esclarecimento():
     c = turno({"intencao": "pedir_orcamento",
                "equipamentos": [eq(categoria="notebook", defeito="esta lento demais")]})["conducao"]

@@ -90,7 +90,7 @@ insert into senhor_smart_at.servicos (id, categoria, nome, sintomas, prazo_texto
   ('cel_camera', 'celular', 'Reparo de câmera', '{câmera,camera,foto,embaçada,"não foca"}', 'mesmo dia', false, null),
   ('cel_vidro_traseiro', 'celular', 'Troca da tampa traseira', '{tampa,traseira,"vidro de trás","parte de trás"}', 'mesmo dia', false, null),
   ('cel_audio', 'celular', 'Reparo de alto-falante ou microfone', '{som,"alto-falante",microfone,"não ouço","não me escutam"}', 'mesmo dia', false, null),
-  ('cel_agua', 'celular', 'Limpeza química (contato com água)', '{água,agua,molhou,caiu na água,oxidação,oxidado}', '24 a 72h', true, 'Desligar o aparelho e não carregar até a avaliação.'),
+  ('cel_agua', 'celular', 'Limpeza química (contato com água)', '{água,agua,molhou,caiu na água,oxidação,oxidado,piscina,molhado,chuva,vaso,mar,umidade}', '24 a 72h', true, 'Desligar o aparelho e não carregar até a avaliação.'),
   ('cel_placa', 'celular', 'Reparo de placa', '{"não liga","não dá sinal",reiniciando,"travado no logo",placa,esquentando}', 'avaliação em até 48h', true, null),
   ('cel_software', 'celular', 'Formatação e atualização', '{lento,travando,formatar,vírus,atualizar,sistema}', 'cerca de 2 horas', false, 'Backup dos dados antes, quando possível.'),
   ('tab_tela', 'tablet', 'Troca de tela de tablet', '{tela,display,trincou,quebrou,touch}', '1 a 3 dias', false, null),

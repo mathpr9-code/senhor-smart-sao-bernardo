@@ -1,101 +1,1223 @@
 {
- "loja": {"nome_ia":"Sofia","endereco":"Av. João Firmino, 330, Loja 03, Assunção, São Bernardo do Campo (dentro do Posto Shell)","nome_loja":"Senhor Smart","horario_texto":"segunda a sexta das 8h30 às 18h30, sábado das 8h30 às 16h30","venda_aparelhos":"também vendemos celulares Android no boleto parcelado, com entrada a partir de R$ 240","garantia_servico":"90 dias de garantia no serviço"},
- "loja_a_confirmar": ["diagnostico","formas_pagamento","prazo_padrao","leva_e_traz"],
- "filas": {"tecnico":"64000384","vendas":"64000384","humano":"64000384"},
- "horario": [{"dia_semana":0,"abre":null,"fecha":null,"fechado":true},{"dia_semana":1,"abre":"08:30","fecha":"18:30","fechado":false},{"dia_semana":2,"abre":"08:30","fecha":"18:30","fechado":false},{"dia_semana":3,"abre":"08:30","fecha":"18:30","fechado":false},{"dia_semana":4,"abre":"08:30","fecha":"18:30","fechado":false},{"dia_semana":5,"abre":"08:30","fecha":"18:30","fechado":false},{"dia_semana":6,"abre":"08:30","fecha":"16:30","fechado":false}],
- "feriados": [{"data":"2026-10-12","nome":"Nossa Senhora Aparecida"},{"data":"2026-11-02","nome":"Finados"},{"data":"2026-11-15","nome":"Proclamação da República"},{"data":"2026-11-20","nome":"Consciência Negra"},{"data":"2026-12-25","nome":"Natal"},{"data":"2027-01-01","nome":"Confraternização"}],
- "categorias": [{"id":"celular","nome":"Celular","atende":true,"fila_transferencia":"tecnico"},{"id":"tablet","nome":"Tablet","atende":true,"fila_transferencia":"tecnico"},{"id":"notebook","nome":"Notebook","atende":true,"fila_transferencia":"tecnico"},{"id":"videogame","nome":"Videogame","atende":true,"fila_transferencia":"tecnico"},{"id":"computador","nome":"Computador de mesa","atende":true,"fila_transferencia":"tecnico"},{"id":"smartwatch","nome":"Smartwatch","atende":true,"fila_transferencia":"tecnico"},{"id":"tv","nome":"Televisão","atende":false,"fila_transferencia":null},{"id":"eletrodomestico","nome":"Eletrodoméstico","atende":false,"fila_transferencia":null}],
+ "loja": {
+  "nome_ia": "Sofia",
+  "endereco": "Av. João Firmino, 330, Loja 03, Assunção, São Bernardo do Campo (dentro do Posto Shell)",
+  "nome_loja": "Senhor Smart",
+  "horario_texto": "segunda a sexta das 8h30 às 18h30, sábado das 8h30 às 16h30",
+  "venda_aparelhos": "também vendemos celulares Android no boleto parcelado, com entrada a partir de R$ 240",
+  "garantia_servico": "90 dias de garantia no serviço"
+ },
+ "loja_a_confirmar": [
+  "diagnostico",
+  "formas_pagamento",
+  "prazo_padrao",
+  "leva_e_traz"
+ ],
+ "filas": {
+  "tecnico": "64000384",
+  "vendas": "64000384",
+  "humano": "64000384"
+ },
+ "horario": [
+  {
+   "dia_semana": 0,
+   "abre": null,
+   "fecha": null,
+   "fechado": true
+  },
+  {
+   "dia_semana": 1,
+   "abre": "08:30",
+   "fecha": "18:30",
+   "fechado": false
+  },
+  {
+   "dia_semana": 2,
+   "abre": "08:30",
+   "fecha": "18:30",
+   "fechado": false
+  },
+  {
+   "dia_semana": 3,
+   "abre": "08:30",
+   "fecha": "18:30",
+   "fechado": false
+  },
+  {
+   "dia_semana": 4,
+   "abre": "08:30",
+   "fecha": "18:30",
+   "fechado": false
+  },
+  {
+   "dia_semana": 5,
+   "abre": "08:30",
+   "fecha": "18:30",
+   "fechado": false
+  },
+  {
+   "dia_semana": 6,
+   "abre": "08:30",
+   "fecha": "16:30",
+   "fechado": false
+  }
+ ],
+ "feriados": [
+  {
+   "data": "2026-10-12",
+   "nome": "Nossa Senhora Aparecida"
+  },
+  {
+   "data": "2026-11-02",
+   "nome": "Finados"
+  },
+  {
+   "data": "2026-11-15",
+   "nome": "Proclamação da República"
+  },
+  {
+   "data": "2026-11-20",
+   "nome": "Consciência Negra"
+  },
+  {
+   "data": "2026-12-25",
+   "nome": "Natal"
+  },
+  {
+   "data": "2027-01-01",
+   "nome": "Confraternização"
+  }
+ ],
+ "categorias": [
+  {
+   "id": "celular",
+   "nome": "Celular",
+   "atende": true,
+   "fila_transferencia": "tecnico"
+  },
+  {
+   "id": "tablet",
+   "nome": "Tablet",
+   "atende": true,
+   "fila_transferencia": "tecnico"
+  },
+  {
+   "id": "notebook",
+   "nome": "Notebook",
+   "atende": true,
+   "fila_transferencia": "tecnico"
+  },
+  {
+   "id": "videogame",
+   "nome": "Videogame",
+   "atende": true,
+   "fila_transferencia": "tecnico"
+  },
+  {
+   "id": "computador",
+   "nome": "Computador de mesa",
+   "atende": true,
+   "fila_transferencia": "tecnico"
+  },
+  {
+   "id": "smartwatch",
+   "nome": "Smartwatch",
+   "atende": true,
+   "fila_transferencia": "tecnico"
+  },
+  {
+   "id": "tv",
+   "nome": "Televisão",
+   "atende": false,
+   "fila_transferencia": null
+  },
+  {
+   "id": "eletrodomestico",
+   "nome": "Eletrodoméstico",
+   "atende": false,
+   "fila_transferencia": null
+  }
+ ],
  "modelos": [
-  {"categoria":"videogame","marca":"Sony","padrao":"dual\\s*sense|controle.*ps\\s*5","exibicao":"Controle DualSense","linha":"padrao","prioridade":5},
-  {"categoria":"videogame","marca":"Sony","padrao":"dual\\s*shock|controle.*ps\\s*4","exibicao":"Controle DualShock 4","linha":"padrao","prioridade":5},
-  {"categoria":"celular","marca":"Apple","padrao":"iphone\\s*(1[4-7])","exibicao":"iPhone \\1","linha":"apple_recente","prioridade":10},
-  {"categoria":"celular","marca":"Apple","padrao":"iphone\\s*(1[23])","exibicao":"iPhone \\1","linha":"apple_medio","prioridade":10},
-  {"categoria":"celular","marca":"Apple","padrao":"iphone\\s*(se|[6-9]|x[rs]?|11)\\M","exibicao":"iPhone \\1","linha":"apple_antigo","prioridade":10},
-  {"categoria":"videogame","marca":"Sony","padrao":"ps\\s*5|playstation\\s*5","exibicao":"PlayStation 5","linha":"premium","prioridade":10},
-  {"categoria":"videogame","marca":"Sony","padrao":"ps\\s*4|playstation\\s*4","exibicao":"PlayStation 4","linha":"intermediario","prioridade":10},
-  {"categoria":"videogame","marca":"Microsoft","padrao":"xbox\\s*series|series\\s*[xs]","exibicao":"Xbox Series","linha":"premium","prioridade":10},
-  {"categoria":"videogame","marca":"Microsoft","padrao":"xbox\\s*one","exibicao":"Xbox One","linha":"intermediario","prioridade":10},
-  {"categoria":"videogame","marca":"Nintendo","padrao":"switch|joy\\s*-?\\s*con","exibicao":"Nintendo Switch","linha":"intermediario","prioridade":10},
-  {"categoria":"tablet","marca":"Apple","padrao":"ipad","exibicao":"iPad","linha":"premium","prioridade":20},
-  {"categoria":"notebook","marca":"Apple","padrao":"mac\\s*book","exibicao":"MacBook","linha":"premium","prioridade":20},
-  {"categoria":"smartwatch","marca":"Apple","padrao":"apple\\s*watch","exibicao":"Apple Watch","linha":"premium","prioridade":20},
-  {"categoria":"celular","marca":"Samsung","padrao":"\\m(s2[0-6]|s1[0-9]|note\\s*[0-9]+|z\\s*(flip|fold))","exibicao":"Galaxy \\1","linha":"premium","prioridade":20},
-  {"categoria":"tablet","marca":"Samsung","padrao":"galaxy\\s*tab|tab\\s*[as]","exibicao":"Galaxy Tab","linha":"intermediario","prioridade":20},
-  {"categoria":"celular","marca":"Motorola","padrao":"edge","exibicao":"Motorola Edge","linha":"premium","prioridade":20},
-  {"categoria":"celular","marca":"Xiaomi","padrao":"redmi\\s*note","exibicao":"Redmi Note","linha":"intermediario","prioridade":20},
-  {"categoria":"celular","marca":"Xiaomi","padrao":"\\mpoco\\M","exibicao":"Poco","linha":"intermediario","prioridade":20},
-  {"categoria":"celular","marca":"Samsung","padrao":"\\ma\\s*([0-1][0-9]s?)\\M","exibicao":"Galaxy A\\1","linha":"entrada","prioridade":30},
-  {"categoria":"celular","marca":"Samsung","padrao":"\\ma\\s*([2-9][0-9]s?)\\M","exibicao":"Galaxy A\\1","linha":"intermediario","prioridade":30},
-  {"categoria":"celular","marca":"Motorola","padrao":"\\mg\\s*([5-9][0-9])\\M","exibicao":"Moto G\\1","linha":"intermediario","prioridade":30},
-  {"categoria":"celular","marca":"Motorola","padrao":"\\mg\\s*([0-4][0-9]|[0-9])\\M","exibicao":"Moto G\\1","linha":"entrada","prioridade":30},
-  {"categoria":"celular","marca":"Motorola","padrao":"\\mmoto\\s*e\\s*([0-9]+)","exibicao":"Moto E\\1","linha":"entrada","prioridade":30},
-  {"categoria":"celular","marca":"Xiaomi","padrao":"redmi","exibicao":"Redmi","linha":"entrada","prioridade":30},
-  {"categoria":"celular","marca":"Samsung","padrao":"\\mm\\s*([0-9]{2})\\M","exibicao":"Galaxy M\\1","linha":"entrada","prioridade":40},
-  {"categoria":"notebook","marca":"Dell","padrao":"dell|inspiron|vostro|latitude","exibicao":"Dell","linha":"padrao","prioridade":40},
-  {"categoria":"notebook","marca":"Lenovo","padrao":"lenovo|ideapad|thinkpad","exibicao":"Lenovo","linha":"padrao","prioridade":40},
-  {"categoria":"notebook","marca":"Acer","padrao":"acer|aspire|nitro","exibicao":"Acer","linha":"padrao","prioridade":40},
-  {"categoria":"notebook","marca":"Samsung","padrao":"samsung\\s*book|galaxy\\s*book","exibicao":"Samsung Book","linha":"padrao","prioridade":40},
-  {"categoria":"notebook","marca":"Asus","padrao":"asus|vivobook|tuf","exibicao":"Asus","linha":"padrao","prioridade":40},
-  {"categoria":"notebook","marca":"HP","padrao":"\\mhp\\M|pavilion|elitebook","exibicao":"HP","linha":"padrao","prioridade":40},
-  {"categoria":"notebook","marca":"Positivo","padrao":"positivo|vaio","exibicao":"Positivo/Vaio","linha":"padrao","prioridade":40},
-  {"categoria":"celular","marca":"Realme","padrao":"realme","exibicao":"Realme","linha":"entrada","prioridade":50},
-  {"categoria":"celular","marca":"LG","padrao":"\\mlg\\M","exibicao":"LG","linha":"entrada","prioridade":50},
-  {"categoria":"celular","marca":"Asus","padrao":"zenfone","exibicao":"Zenfone","linha":"intermediario","prioridade":50},
-  {"categoria":"videogame","marca":"Microsoft","padrao":"xbox","exibicao":"Xbox","linha":"intermediario","prioridade":80},
-  {"categoria":"celular","marca":"Apple","padrao":"iphone","exibicao":"iPhone","linha":"apple_medio","prioridade":90},
-  {"categoria":"celular","marca":"Samsung","padrao":"samsung|galaxy","exibicao":"Samsung","linha":"intermediario","prioridade":90},
-  {"categoria":"celular","marca":"Motorola","padrao":"motorola|\\mmoto\\M","exibicao":"Motorola","linha":"entrada","prioridade":90},
-  {"categoria":"celular","marca":"Xiaomi","padrao":"xiaomi|\\mmi\\s*[0-9]","exibicao":"Xiaomi","linha":"intermediario","prioridade":90}
+  {
+   "categoria": "videogame",
+   "marca": "Sony",
+   "padrao": "dual\\s*sense|controle.*ps\\s*5",
+   "exibicao": "Controle DualSense",
+   "linha": "padrao",
+   "prioridade": 5
+  },
+  {
+   "categoria": "videogame",
+   "marca": "Sony",
+   "padrao": "dual\\s*shock|controle.*ps\\s*4",
+   "exibicao": "Controle DualShock 4",
+   "linha": "padrao",
+   "prioridade": 5
+  },
+  {
+   "categoria": "celular",
+   "marca": "Apple",
+   "padrao": "iphone\\s*(1[4-7])",
+   "exibicao": "iPhone \\1",
+   "linha": "apple_recente",
+   "prioridade": 10
+  },
+  {
+   "categoria": "celular",
+   "marca": "Apple",
+   "padrao": "iphone\\s*(1[23])",
+   "exibicao": "iPhone \\1",
+   "linha": "apple_medio",
+   "prioridade": 10
+  },
+  {
+   "categoria": "celular",
+   "marca": "Apple",
+   "padrao": "iphone\\s*(se|[6-9]|x[rs]?|11)\\M",
+   "exibicao": "iPhone \\1",
+   "linha": "apple_antigo",
+   "prioridade": 10
+  },
+  {
+   "categoria": "videogame",
+   "marca": "Sony",
+   "padrao": "ps\\s*5|playstation\\s*5",
+   "exibicao": "PlayStation 5",
+   "linha": "premium",
+   "prioridade": 10
+  },
+  {
+   "categoria": "videogame",
+   "marca": "Sony",
+   "padrao": "ps\\s*4|playstation\\s*4",
+   "exibicao": "PlayStation 4",
+   "linha": "intermediario",
+   "prioridade": 10
+  },
+  {
+   "categoria": "videogame",
+   "marca": "Microsoft",
+   "padrao": "xbox\\s*series|series\\s*[xs]",
+   "exibicao": "Xbox Series",
+   "linha": "premium",
+   "prioridade": 10
+  },
+  {
+   "categoria": "videogame",
+   "marca": "Microsoft",
+   "padrao": "xbox\\s*one",
+   "exibicao": "Xbox One",
+   "linha": "intermediario",
+   "prioridade": 10
+  },
+  {
+   "categoria": "videogame",
+   "marca": "Nintendo",
+   "padrao": "switch|joy\\s*-?\\s*con",
+   "exibicao": "Nintendo Switch",
+   "linha": "intermediario",
+   "prioridade": 10
+  },
+  {
+   "categoria": "tablet",
+   "marca": "Apple",
+   "padrao": "ipad",
+   "exibicao": "iPad",
+   "linha": "premium",
+   "prioridade": 20
+  },
+  {
+   "categoria": "notebook",
+   "marca": "Apple",
+   "padrao": "mac\\s*book",
+   "exibicao": "MacBook",
+   "linha": "premium",
+   "prioridade": 20
+  },
+  {
+   "categoria": "smartwatch",
+   "marca": "Apple",
+   "padrao": "apple\\s*watch",
+   "exibicao": "Apple Watch",
+   "linha": "premium",
+   "prioridade": 20
+  },
+  {
+   "categoria": "celular",
+   "marca": "Samsung",
+   "padrao": "\\m(s2[0-6]|s1[0-9]|note\\s*[0-9]+|z\\s*(flip|fold))",
+   "exibicao": "Galaxy \\1",
+   "linha": "premium",
+   "prioridade": 20
+  },
+  {
+   "categoria": "tablet",
+   "marca": "Samsung",
+   "padrao": "galaxy\\s*tab|tab\\s*[as]",
+   "exibicao": "Galaxy Tab",
+   "linha": "intermediario",
+   "prioridade": 20
+  },
+  {
+   "categoria": "celular",
+   "marca": "Motorola",
+   "padrao": "edge",
+   "exibicao": "Motorola Edge",
+   "linha": "premium",
+   "prioridade": 20
+  },
+  {
+   "categoria": "celular",
+   "marca": "Xiaomi",
+   "padrao": "redmi\\s*note",
+   "exibicao": "Redmi Note",
+   "linha": "intermediario",
+   "prioridade": 20
+  },
+  {
+   "categoria": "celular",
+   "marca": "Xiaomi",
+   "padrao": "\\mpoco\\M",
+   "exibicao": "Poco",
+   "linha": "intermediario",
+   "prioridade": 20
+  },
+  {
+   "categoria": "celular",
+   "marca": "Samsung",
+   "padrao": "\\ma\\s*([0-1][0-9]s?)\\M",
+   "exibicao": "Galaxy A\\1",
+   "linha": "entrada",
+   "prioridade": 30
+  },
+  {
+   "categoria": "celular",
+   "marca": "Samsung",
+   "padrao": "\\ma\\s*([2-9][0-9]s?)\\M",
+   "exibicao": "Galaxy A\\1",
+   "linha": "intermediario",
+   "prioridade": 30
+  },
+  {
+   "categoria": "celular",
+   "marca": "Motorola",
+   "padrao": "\\mg\\s*([5-9][0-9])\\M",
+   "exibicao": "Moto G\\1",
+   "linha": "intermediario",
+   "prioridade": 30
+  },
+  {
+   "categoria": "celular",
+   "marca": "Motorola",
+   "padrao": "\\mg\\s*([0-4][0-9]|[0-9])\\M",
+   "exibicao": "Moto G\\1",
+   "linha": "entrada",
+   "prioridade": 30
+  },
+  {
+   "categoria": "celular",
+   "marca": "Motorola",
+   "padrao": "\\mmoto\\s*e\\s*([0-9]+)",
+   "exibicao": "Moto E\\1",
+   "linha": "entrada",
+   "prioridade": 30
+  },
+  {
+   "categoria": "celular",
+   "marca": "Xiaomi",
+   "padrao": "redmi",
+   "exibicao": "Redmi",
+   "linha": "entrada",
+   "prioridade": 30
+  },
+  {
+   "categoria": "celular",
+   "marca": "Samsung",
+   "padrao": "\\mm\\s*([0-9]{2})\\M",
+   "exibicao": "Galaxy M\\1",
+   "linha": "entrada",
+   "prioridade": 40
+  },
+  {
+   "categoria": "notebook",
+   "marca": "Dell",
+   "padrao": "dell|inspiron|vostro|latitude",
+   "exibicao": "Dell",
+   "linha": "padrao",
+   "prioridade": 40
+  },
+  {
+   "categoria": "notebook",
+   "marca": "Lenovo",
+   "padrao": "lenovo|ideapad|thinkpad",
+   "exibicao": "Lenovo",
+   "linha": "padrao",
+   "prioridade": 40
+  },
+  {
+   "categoria": "notebook",
+   "marca": "Acer",
+   "padrao": "acer|aspire|nitro",
+   "exibicao": "Acer",
+   "linha": "padrao",
+   "prioridade": 40
+  },
+  {
+   "categoria": "notebook",
+   "marca": "Samsung",
+   "padrao": "samsung\\s*book|galaxy\\s*book",
+   "exibicao": "Samsung Book",
+   "linha": "padrao",
+   "prioridade": 40
+  },
+  {
+   "categoria": "notebook",
+   "marca": "Asus",
+   "padrao": "asus|vivobook|tuf",
+   "exibicao": "Asus",
+   "linha": "padrao",
+   "prioridade": 40
+  },
+  {
+   "categoria": "notebook",
+   "marca": "HP",
+   "padrao": "\\mhp\\M|pavilion|elitebook",
+   "exibicao": "HP",
+   "linha": "padrao",
+   "prioridade": 40
+  },
+  {
+   "categoria": "notebook",
+   "marca": "Positivo",
+   "padrao": "positivo|vaio",
+   "exibicao": "Positivo/Vaio",
+   "linha": "padrao",
+   "prioridade": 40
+  },
+  {
+   "categoria": "celular",
+   "marca": "Realme",
+   "padrao": "realme",
+   "exibicao": "Realme",
+   "linha": "entrada",
+   "prioridade": 50
+  },
+  {
+   "categoria": "celular",
+   "marca": "LG",
+   "padrao": "\\mlg\\M",
+   "exibicao": "LG",
+   "linha": "entrada",
+   "prioridade": 50
+  },
+  {
+   "categoria": "celular",
+   "marca": "Asus",
+   "padrao": "zenfone",
+   "exibicao": "Zenfone",
+   "linha": "intermediario",
+   "prioridade": 50
+  },
+  {
+   "categoria": "videogame",
+   "marca": "Microsoft",
+   "padrao": "xbox",
+   "exibicao": "Xbox",
+   "linha": "intermediario",
+   "prioridade": 80
+  },
+  {
+   "categoria": "celular",
+   "marca": "Apple",
+   "padrao": "iphone",
+   "exibicao": "iPhone",
+   "linha": "apple_medio",
+   "prioridade": 90
+  },
+  {
+   "categoria": "celular",
+   "marca": "Samsung",
+   "padrao": "samsung|galaxy",
+   "exibicao": "Samsung",
+   "linha": "intermediario",
+   "prioridade": 90
+  },
+  {
+   "categoria": "celular",
+   "marca": "Motorola",
+   "padrao": "motorola|\\mmoto\\M",
+   "exibicao": "Motorola",
+   "linha": "entrada",
+   "prioridade": 90
+  },
+  {
+   "categoria": "celular",
+   "marca": "Xiaomi",
+   "padrao": "xiaomi|\\mmi\\s*[0-9]",
+   "exibicao": "Xiaomi",
+   "linha": "intermediario",
+   "prioridade": 90
+  }
  ],
  "servicos": [
-  {"id":"cel_tela","categoria":"celular","nome":"Troca de tela","sintomas":["tela","display","trincou","quebrou","riscos","listras","mancha","não acende","tela preta","touch","toque"],"prazo":"mesmo dia, se houver peça em estoque","exige_diagnostico":false,"observacao":"Tela que não acende após queda pode ser display ou placa: confirmado na avaliação."},
-  {"id":"cel_bateria","categoria":"celular","nome":"Troca de bateria","sintomas":["bateria","descarrega","não segura carga","estufada","inchada","desliga sozinho"],"prazo":"cerca de 1 hora","exige_diagnostico":false,"observacao":null},
-  {"id":"cel_conector","categoria":"celular","nome":"Troca do conector de carga","sintomas":["não carrega","carregador","conector","entrada do carregador","mau contato"],"prazo":"cerca de 1 hora","exige_diagnostico":false,"observacao":"Às vezes é só sujeira no conector: limpeza resolve."},
-  {"id":"cel_camera","categoria":"celular","nome":"Reparo de câmera","sintomas":["câmera","camera","foto","embaçada","não foca"],"prazo":"mesmo dia","exige_diagnostico":false,"observacao":null},
-  {"id":"cel_vidro_traseiro","categoria":"celular","nome":"Troca da tampa traseira","sintomas":["tampa","traseira","vidro de trás","parte de trás"],"prazo":"mesmo dia","exige_diagnostico":false,"observacao":null},
-  {"id":"cel_audio","categoria":"celular","nome":"Reparo de alto-falante ou microfone","sintomas":["som","alto-falante","microfone","não ouço","não me escutam"],"prazo":"mesmo dia","exige_diagnostico":false,"observacao":null},
-  {"id":"cel_agua","categoria":"celular","nome":"Limpeza química (contato com água)","sintomas":["água","agua","molhou","caiu na água","oxidação","oxidado"],"prazo":"24 a 72h","exige_diagnostico":true,"observacao":"Desligar o aparelho e não carregar até a avaliação."},
-  {"id":"cel_placa","categoria":"celular","nome":"Reparo de placa","sintomas":["não liga","não dá sinal","reiniciando","travado no logo","placa","esquentando"],"prazo":"avaliação em até 48h","exige_diagnostico":true,"observacao":null},
-  {"id":"cel_software","categoria":"celular","nome":"Formatação e atualização","sintomas":["lento","travando","formatar","vírus","atualizar","sistema"],"prazo":"cerca de 2 horas","exige_diagnostico":false,"observacao":"Backup dos dados antes, quando possível."},
-  {"id":"tab_tela","categoria":"tablet","nome":"Troca de tela de tablet","sintomas":["tela","display","trincou","quebrou","touch"],"prazo":"1 a 3 dias","exige_diagnostico":false,"observacao":null},
-  {"id":"tab_bateria","categoria":"tablet","nome":"Troca de bateria de tablet","sintomas":["bateria","descarrega","estufada"],"prazo":"1 a 2 dias","exige_diagnostico":false,"observacao":null},
-  {"id":"nb_tela","categoria":"notebook","nome":"Troca de tela de notebook","sintomas":["tela","display","quebrou","trincou","listras","tela preta","mancha"],"prazo":"1 a 3 dias","exige_diagnostico":false,"observacao":null},
-  {"id":"nb_teclado","categoria":"notebook","nome":"Troca de teclado","sintomas":["teclado","tecla","teclas"],"prazo":"1 a 3 dias","exige_diagnostico":false,"observacao":null},
-  {"id":"nb_bateria","categoria":"notebook","nome":"Troca de bateria de notebook","sintomas":["bateria","só funciona na tomada","descarrega"],"prazo":"1 a 3 dias","exige_diagnostico":false,"observacao":null},
-  {"id":"nb_limpeza","categoria":"notebook","nome":"Limpeza interna e pasta térmica","sintomas":["esquentando","quente","barulho","ventoinha","cooler","desligando"],"prazo":"mesmo dia","exige_diagnostico":false,"observacao":null},
-  {"id":"nb_ssd","categoria":"notebook","nome":"Upgrade para SSD (com peça)","sintomas":["lento","demora","ssd","ligar rápido","hd"],"prazo":"mesmo dia","exige_diagnostico":false,"observacao":"Inclui SSD de 240GB a 480GB e clonagem do sistema."},
-  {"id":"nb_formatacao","categoria":"notebook","nome":"Formatação com backup","sintomas":["formatar","vírus","windows","sistema","lento"],"prazo":"1 dia","exige_diagnostico":false,"observacao":null},
-  {"id":"nb_conector","categoria":"notebook","nome":"Troca do conector de energia","sintomas":["não carrega","carregador","conector","mau contato"],"prazo":"1 a 2 dias","exige_diagnostico":false,"observacao":null},
-  {"id":"nb_placa","categoria":"notebook","nome":"Reparo de placa de notebook","sintomas":["não liga","sem imagem","placa","água","molhou"],"prazo":"avaliação em até 72h","exige_diagnostico":true,"observacao":null},
-  {"id":"vg_limpeza","categoria":"videogame","nome":"Limpeza e troca de pasta térmica","sintomas":["barulho","esquentando","quente","ventoinha","desligando"],"prazo":"mesmo dia","exige_diagnostico":false,"observacao":null},
-  {"id":"vg_hdmi","categoria":"videogame","nome":"Troca da porta HDMI","sintomas":["hdmi","sem imagem","não dá vídeo","sem sinal"],"prazo":"1 a 2 dias","exige_diagnostico":false,"observacao":null},
-  {"id":"vg_controle","categoria":"videogame","nome":"Reparo de controle (analógico/drift)","sintomas":["controle","analógico","analogico","drift","anda sozinho","botão"],"prazo":"mesmo dia","exige_diagnostico":false,"observacao":null},
-  {"id":"vg_leitor","categoria":"videogame","nome":"Reparo do leitor de disco","sintomas":["disco","leitor","não lê","não puxa"],"prazo":"avaliação em até 72h","exige_diagnostico":true,"observacao":null},
-  {"id":"vg_placa","categoria":"videogame","nome":"Reparo de placa de console","sintomas":["não liga","luz azul","luz vermelha","placa"],"prazo":"avaliação em até 72h","exige_diagnostico":true,"observacao":null},
-  {"id":"sw_reparo","categoria":"smartwatch","nome":"Reparo de smartwatch","sintomas":["tela","bateria","não liga","pulseira"],"prazo":"avaliação na loja","exige_diagnostico":true,"observacao":null},
-  {"id":"pc_manutencao","categoria":"computador","nome":"Manutenção de computador","sintomas":["lento","não liga","formatar","limpeza"],"prazo":"avaliação na loja","exige_diagnostico":true,"observacao":null}
+  {
+   "id": "cel_tela",
+   "categoria": "celular",
+   "nome": "Troca de tela",
+   "sintomas": [
+    "tela",
+    "display",
+    "trincou",
+    "quebrou",
+    "riscos",
+    "listras",
+    "mancha",
+    "não acende",
+    "tela preta",
+    "touch",
+    "toque"
+   ],
+   "prazo": "mesmo dia, se houver peça em estoque",
+   "exige_diagnostico": false,
+   "observacao": "Tela que não acende após queda pode ser display ou placa: confirmado na avaliação."
+  },
+  {
+   "id": "cel_bateria",
+   "categoria": "celular",
+   "nome": "Troca de bateria",
+   "sintomas": [
+    "bateria",
+    "descarrega",
+    "não segura carga",
+    "estufada",
+    "inchada",
+    "desliga sozinho"
+   ],
+   "prazo": "cerca de 1 hora",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "cel_conector",
+   "categoria": "celular",
+   "nome": "Troca do conector de carga",
+   "sintomas": [
+    "não carrega",
+    "carregador",
+    "conector",
+    "entrada do carregador",
+    "mau contato"
+   ],
+   "prazo": "cerca de 1 hora",
+   "exige_diagnostico": false,
+   "observacao": "Às vezes é só sujeira no conector: limpeza resolve."
+  },
+  {
+   "id": "cel_camera",
+   "categoria": "celular",
+   "nome": "Reparo de câmera",
+   "sintomas": [
+    "câmera",
+    "camera",
+    "foto",
+    "embaçada",
+    "não foca"
+   ],
+   "prazo": "mesmo dia",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "cel_vidro_traseiro",
+   "categoria": "celular",
+   "nome": "Troca da tampa traseira",
+   "sintomas": [
+    "tampa",
+    "traseira",
+    "vidro de trás",
+    "parte de trás"
+   ],
+   "prazo": "mesmo dia",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "cel_audio",
+   "categoria": "celular",
+   "nome": "Reparo de alto-falante ou microfone",
+   "sintomas": [
+    "som",
+    "alto-falante",
+    "microfone",
+    "não ouço",
+    "não me escutam"
+   ],
+   "prazo": "mesmo dia",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "cel_agua",
+   "categoria": "celular",
+   "nome": "Limpeza química (contato com água)",
+   "sintomas": [
+    "água",
+    "agua",
+    "molhou",
+    "caiu na água",
+    "oxidação",
+    "oxidado",
+    "piscina",
+    "molhado",
+    "chuva",
+    "vaso",
+    "mar",
+    "umidade"
+   ],
+   "prazo": "24 a 72h",
+   "exige_diagnostico": true,
+   "observacao": "Desligar o aparelho e não carregar até a avaliação."
+  },
+  {
+   "id": "cel_placa",
+   "categoria": "celular",
+   "nome": "Reparo de placa",
+   "sintomas": [
+    "não liga",
+    "não dá sinal",
+    "reiniciando",
+    "travado no logo",
+    "placa",
+    "esquentando"
+   ],
+   "prazo": "avaliação em até 48h",
+   "exige_diagnostico": true,
+   "observacao": null
+  },
+  {
+   "id": "cel_software",
+   "categoria": "celular",
+   "nome": "Formatação e atualização",
+   "sintomas": [
+    "lento",
+    "travando",
+    "formatar",
+    "vírus",
+    "atualizar",
+    "sistema"
+   ],
+   "prazo": "cerca de 2 horas",
+   "exige_diagnostico": false,
+   "observacao": "Backup dos dados antes, quando possível."
+  },
+  {
+   "id": "tab_tela",
+   "categoria": "tablet",
+   "nome": "Troca de tela de tablet",
+   "sintomas": [
+    "tela",
+    "display",
+    "trincou",
+    "quebrou",
+    "touch"
+   ],
+   "prazo": "1 a 3 dias",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "tab_bateria",
+   "categoria": "tablet",
+   "nome": "Troca de bateria de tablet",
+   "sintomas": [
+    "bateria",
+    "descarrega",
+    "estufada"
+   ],
+   "prazo": "1 a 2 dias",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "nb_tela",
+   "categoria": "notebook",
+   "nome": "Troca de tela de notebook",
+   "sintomas": [
+    "tela",
+    "display",
+    "quebrou",
+    "trincou",
+    "listras",
+    "tela preta",
+    "mancha"
+   ],
+   "prazo": "1 a 3 dias",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "nb_teclado",
+   "categoria": "notebook",
+   "nome": "Troca de teclado",
+   "sintomas": [
+    "teclado",
+    "tecla",
+    "teclas"
+   ],
+   "prazo": "1 a 3 dias",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "nb_bateria",
+   "categoria": "notebook",
+   "nome": "Troca de bateria de notebook",
+   "sintomas": [
+    "bateria",
+    "só funciona na tomada",
+    "descarrega"
+   ],
+   "prazo": "1 a 3 dias",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "nb_limpeza",
+   "categoria": "notebook",
+   "nome": "Limpeza interna e pasta térmica",
+   "sintomas": [
+    "esquentando",
+    "quente",
+    "barulho",
+    "ventoinha",
+    "cooler",
+    "desligando"
+   ],
+   "prazo": "mesmo dia",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "nb_ssd",
+   "categoria": "notebook",
+   "nome": "Upgrade para SSD (com peça)",
+   "sintomas": [
+    "lento",
+    "demora",
+    "ssd",
+    "ligar rápido",
+    "hd"
+   ],
+   "prazo": "mesmo dia",
+   "exige_diagnostico": false,
+   "observacao": "Inclui SSD de 240GB a 480GB e clonagem do sistema."
+  },
+  {
+   "id": "nb_formatacao",
+   "categoria": "notebook",
+   "nome": "Formatação com backup",
+   "sintomas": [
+    "formatar",
+    "vírus",
+    "windows",
+    "sistema",
+    "lento"
+   ],
+   "prazo": "1 dia",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "nb_conector",
+   "categoria": "notebook",
+   "nome": "Troca do conector de energia",
+   "sintomas": [
+    "não carrega",
+    "carregador",
+    "conector",
+    "mau contato"
+   ],
+   "prazo": "1 a 2 dias",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "nb_placa",
+   "categoria": "notebook",
+   "nome": "Reparo de placa de notebook",
+   "sintomas": [
+    "não liga",
+    "sem imagem",
+    "placa",
+    "água",
+    "molhou"
+   ],
+   "prazo": "avaliação em até 72h",
+   "exige_diagnostico": true,
+   "observacao": null
+  },
+  {
+   "id": "vg_limpeza",
+   "categoria": "videogame",
+   "nome": "Limpeza e troca de pasta térmica",
+   "sintomas": [
+    "barulho",
+    "esquentando",
+    "quente",
+    "ventoinha",
+    "desligando"
+   ],
+   "prazo": "mesmo dia",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "vg_hdmi",
+   "categoria": "videogame",
+   "nome": "Troca da porta HDMI",
+   "sintomas": [
+    "hdmi",
+    "sem imagem",
+    "não dá vídeo",
+    "sem sinal"
+   ],
+   "prazo": "1 a 2 dias",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "vg_controle",
+   "categoria": "videogame",
+   "nome": "Reparo de controle (analógico/drift)",
+   "sintomas": [
+    "controle",
+    "analógico",
+    "analogico",
+    "drift",
+    "anda sozinho",
+    "botão"
+   ],
+   "prazo": "mesmo dia",
+   "exige_diagnostico": false,
+   "observacao": null
+  },
+  {
+   "id": "vg_leitor",
+   "categoria": "videogame",
+   "nome": "Reparo do leitor de disco",
+   "sintomas": [
+    "disco",
+    "leitor",
+    "não lê",
+    "não puxa"
+   ],
+   "prazo": "avaliação em até 72h",
+   "exige_diagnostico": true,
+   "observacao": null
+  },
+  {
+   "id": "vg_placa",
+   "categoria": "videogame",
+   "nome": "Reparo de placa de console",
+   "sintomas": [
+    "não liga",
+    "luz azul",
+    "luz vermelha",
+    "placa"
+   ],
+   "prazo": "avaliação em até 72h",
+   "exige_diagnostico": true,
+   "observacao": null
+  },
+  {
+   "id": "sw_reparo",
+   "categoria": "smartwatch",
+   "nome": "Reparo de smartwatch",
+   "sintomas": [
+    "tela",
+    "bateria",
+    "não liga",
+    "pulseira"
+   ],
+   "prazo": "avaliação na loja",
+   "exige_diagnostico": true,
+   "observacao": null
+  },
+  {
+   "id": "pc_manutencao",
+   "categoria": "computador",
+   "nome": "Manutenção de computador",
+   "sintomas": [
+    "lento",
+    "não liga",
+    "formatar",
+    "limpeza"
+   ],
+   "prazo": "avaliação na loja",
+   "exige_diagnostico": true,
+   "observacao": null
+  }
  ],
  "precos": [
-  {"servico_id":"cel_tela","linha":"entrada","min":180,"max":350,"validado":false},{"servico_id":"cel_tela","linha":"intermediario","min":280,"max":650,"validado":false},{"servico_id":"cel_tela","linha":"premium","min":700,"max":1600,"validado":false},{"servico_id":"cel_tela","linha":"apple_antigo","min":350,"max":800,"validado":false},{"servico_id":"cel_tela","linha":"apple_medio","min":600,"max":1300,"validado":false},{"servico_id":"cel_tela","linha":"apple_recente","min":1000,"max":2400,"validado":false},
-  {"servico_id":"cel_bateria","linha":"entrada","min":120,"max":200,"validado":false},{"servico_id":"cel_bateria","linha":"intermediario","min":150,"max":280,"validado":false},{"servico_id":"cel_bateria","linha":"premium","min":250,"max":450,"validado":false},{"servico_id":"cel_bateria","linha":"apple_antigo","min":200,"max":380,"validado":false},{"servico_id":"cel_bateria","linha":"apple_medio","min":280,"max":480,"validado":false},{"servico_id":"cel_bateria","linha":"apple_recente","min":380,"max":700,"validado":false},
-  {"servico_id":"cel_conector","linha":"entrada","min":90,"max":180,"validado":false},{"servico_id":"cel_conector","linha":"intermediario","min":120,"max":250,"validado":false},{"servico_id":"cel_conector","linha":"premium","min":200,"max":400,"validado":false},{"servico_id":"cel_conector","linha":"apple_antigo","min":200,"max":350,"validado":false},{"servico_id":"cel_conector","linha":"apple_medio","min":250,"max":450,"validado":false},{"servico_id":"cel_conector","linha":"apple_recente","min":300,"max":550,"validado":false},
-  {"servico_id":"cel_camera","linha":"entrada","min":120,"max":250,"validado":false},{"servico_id":"cel_camera","linha":"intermediario","min":180,"max":400,"validado":false},{"servico_id":"cel_camera","linha":"premium","min":300,"max":800,"validado":false},{"servico_id":"cel_camera","linha":"apple_antigo","min":300,"max":600,"validado":false},{"servico_id":"cel_camera","linha":"apple_medio","min":400,"max":800,"validado":false},{"servico_id":"cel_camera","linha":"apple_recente","min":500,"max":1100,"validado":false},
-  {"servico_id":"cel_vidro_traseiro","linha":null,"min":120,"max":450,"validado":false},{"servico_id":"cel_audio","linha":null,"min":90,"max":250,"validado":false},{"servico_id":"cel_software","linha":null,"min":60,"max":120,"validado":false},
-  {"servico_id":"tab_tela","linha":null,"min":300,"max":900,"validado":false},{"servico_id":"tab_tela","linha":"premium","min":700,"max":1800,"validado":false},{"servico_id":"tab_bateria","linha":null,"min":200,"max":400,"validado":false},
-  {"servico_id":"nb_tela","linha":"padrao","min":350,"max":900,"validado":false},{"servico_id":"nb_tela","linha":"premium","min":1500,"max":4000,"validado":false},
-  {"servico_id":"nb_teclado","linha":"padrao","min":180,"max":450,"validado":false},{"servico_id":"nb_teclado","linha":"premium","min":600,"max":1500,"validado":false},
-  {"servico_id":"nb_bateria","linha":"padrao","min":250,"max":600,"validado":false},{"servico_id":"nb_bateria","linha":"premium","min":700,"max":1500,"validado":false},
-  {"servico_id":"nb_limpeza","linha":null,"min":120,"max":250,"validado":false},{"servico_id":"nb_ssd","linha":null,"min":250,"max":600,"validado":false},{"servico_id":"nb_formatacao","linha":null,"min":100,"max":200,"validado":false},{"servico_id":"nb_conector","linha":null,"min":150,"max":300,"validado":false},
-  {"servico_id":"vg_limpeza","linha":null,"min":150,"max":300,"validado":false},{"servico_id":"vg_hdmi","linha":null,"min":250,"max":500,"validado":false},{"servico_id":"vg_controle","linha":null,"min":100,"max":200,"validado":false}
+  {
+   "servico_id": "cel_tela",
+   "linha": "entrada",
+   "min": 180,
+   "max": 350,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_tela",
+   "linha": "intermediario",
+   "min": 280,
+   "max": 650,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_tela",
+   "linha": "premium",
+   "min": 700,
+   "max": 1600,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_tela",
+   "linha": "apple_antigo",
+   "min": 350,
+   "max": 800,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_tela",
+   "linha": "apple_medio",
+   "min": 600,
+   "max": 1300,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_tela",
+   "linha": "apple_recente",
+   "min": 1000,
+   "max": 2400,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_bateria",
+   "linha": "entrada",
+   "min": 120,
+   "max": 200,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_bateria",
+   "linha": "intermediario",
+   "min": 150,
+   "max": 280,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_bateria",
+   "linha": "premium",
+   "min": 250,
+   "max": 450,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_bateria",
+   "linha": "apple_antigo",
+   "min": 200,
+   "max": 380,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_bateria",
+   "linha": "apple_medio",
+   "min": 280,
+   "max": 480,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_bateria",
+   "linha": "apple_recente",
+   "min": 380,
+   "max": 700,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_conector",
+   "linha": "entrada",
+   "min": 90,
+   "max": 180,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_conector",
+   "linha": "intermediario",
+   "min": 120,
+   "max": 250,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_conector",
+   "linha": "premium",
+   "min": 200,
+   "max": 400,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_conector",
+   "linha": "apple_antigo",
+   "min": 200,
+   "max": 350,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_conector",
+   "linha": "apple_medio",
+   "min": 250,
+   "max": 450,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_conector",
+   "linha": "apple_recente",
+   "min": 300,
+   "max": 550,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_camera",
+   "linha": "entrada",
+   "min": 120,
+   "max": 250,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_camera",
+   "linha": "intermediario",
+   "min": 180,
+   "max": 400,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_camera",
+   "linha": "premium",
+   "min": 300,
+   "max": 800,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_camera",
+   "linha": "apple_antigo",
+   "min": 300,
+   "max": 600,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_camera",
+   "linha": "apple_medio",
+   "min": 400,
+   "max": 800,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_camera",
+   "linha": "apple_recente",
+   "min": 500,
+   "max": 1100,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_vidro_traseiro",
+   "linha": null,
+   "min": 120,
+   "max": 450,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_audio",
+   "linha": null,
+   "min": 90,
+   "max": 250,
+   "validado": false
+  },
+  {
+   "servico_id": "cel_software",
+   "linha": null,
+   "min": 60,
+   "max": 120,
+   "validado": false
+  },
+  {
+   "servico_id": "tab_tela",
+   "linha": null,
+   "min": 300,
+   "max": 900,
+   "validado": false
+  },
+  {
+   "servico_id": "tab_tela",
+   "linha": "premium",
+   "min": 700,
+   "max": 1800,
+   "validado": false
+  },
+  {
+   "servico_id": "tab_bateria",
+   "linha": null,
+   "min": 200,
+   "max": 400,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_tela",
+   "linha": "padrao",
+   "min": 350,
+   "max": 900,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_tela",
+   "linha": "premium",
+   "min": 1500,
+   "max": 4000,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_teclado",
+   "linha": "padrao",
+   "min": 180,
+   "max": 450,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_teclado",
+   "linha": "premium",
+   "min": 600,
+   "max": 1500,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_bateria",
+   "linha": "padrao",
+   "min": 250,
+   "max": 600,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_bateria",
+   "linha": "premium",
+   "min": 700,
+   "max": 1500,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_limpeza",
+   "linha": null,
+   "min": 120,
+   "max": 250,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_ssd",
+   "linha": null,
+   "min": 250,
+   "max": 600,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_formatacao",
+   "linha": null,
+   "min": 100,
+   "max": 200,
+   "validado": false
+  },
+  {
+   "servico_id": "nb_conector",
+   "linha": null,
+   "min": 150,
+   "max": 300,
+   "validado": false
+  },
+  {
+   "servico_id": "vg_limpeza",
+   "linha": null,
+   "min": 150,
+   "max": 300,
+   "validado": false
+  },
+  {
+   "servico_id": "vg_hdmi",
+   "linha": null,
+   "min": 250,
+   "max": 500,
+   "validado": false
+  },
+  {
+   "servico_id": "vg_controle",
+   "linha": null,
+   "min": 100,
+   "max": 200,
+   "validado": false
+  }
  ],
  "origem_regra": [
-  {"prioridade":10,"campo":"anuncio","padrao":"%","canal":"meta","campanha":"Anúncio Meta (click-to-WhatsApp)"},
-  {"prioridade":20,"campo":"mensagem","padrao":"%vim pelo google%","canal":"google","campanha":"Google Ads"},
-  {"prioridade":20,"campo":"mensagem","padrao":"%encontrei no google%","canal":"google","campanha":"Google Ads"},
-  {"prioridade":20,"campo":"mensagem","padrao":"%vi no google%","canal":"google","campanha":"Google Ads"},
-  {"prioridade":30,"campo":"mensagem","padrao":"%vi o an_ncio%","canal":"meta","campanha":"Anúncio Meta"},
-  {"prioridade":30,"campo":"mensagem","padrao":"%instagram%","canal":"meta","campanha":"Instagram"},
-  {"prioridade":40,"campo":"mensagem","padrao":"%site%","canal":"site","campanha":"Site"},
-  {"prioridade":50,"campo":"mensagem","padrao":"%indica%","canal":"indicacao","campanha":"Indicação"}
+  {
+   "prioridade": 10,
+   "campo": "anuncio",
+   "padrao": "%",
+   "canal": "meta",
+   "campanha": "Anúncio Meta (click-to-WhatsApp)"
+  },
+  {
+   "prioridade": 20,
+   "campo": "mensagem",
+   "padrao": "%vim pelo google%",
+   "canal": "google",
+   "campanha": "Google Ads"
+  },
+  {
+   "prioridade": 20,
+   "campo": "mensagem",
+   "padrao": "%encontrei no google%",
+   "canal": "google",
+   "campanha": "Google Ads"
+  },
+  {
+   "prioridade": 20,
+   "campo": "mensagem",
+   "padrao": "%vi no google%",
+   "canal": "google",
+   "campanha": "Google Ads"
+  },
+  {
+   "prioridade": 30,
+   "campo": "mensagem",
+   "padrao": "%vi o an_ncio%",
+   "canal": "meta",
+   "campanha": "Anúncio Meta"
+  },
+  {
+   "prioridade": 30,
+   "campo": "mensagem",
+   "padrao": "%instagram%",
+   "canal": "meta",
+   "campanha": "Instagram"
+  },
+  {
+   "prioridade": 40,
+   "campo": "mensagem",
+   "padrao": "%site%",
+   "canal": "site",
+   "campanha": "Site"
+  },
+  {
+   "prioridade": 50,
+   "campo": "mensagem",
+   "padrao": "%indica%",
+   "canal": "indicacao",
+   "campanha": "Indicação"
+  }
  ]
 }

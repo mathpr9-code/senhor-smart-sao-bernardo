@@ -1,0 +1,30 @@
+# Receita "subir uma IA nova no Droplet atual (sem derrubar as outras)" — Notion, Droplet & VPS.
+# Pasta própria: /opt/senhor-smart-estado. Nunca use "ports": quem fala com a internet é o Caddy.
+services:
+  maquina:
+    build: .
+    container_name: senhor-smart-maquina   # o Caddy encontra o serviço por este nome
+    restart: unless-stopped
+    expose:
+      - "8000"
+    mem_limit: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+    networks:
+      - estado-net
+      - caddy-net                          # obrigatória: é onde vive o Caddy
+
+networks:
+  estado-net:
+    external: true
+  caddy-net:
+    external: true
+    name: agnes-estado_default             # nome real da rede do Caddy (não mude)

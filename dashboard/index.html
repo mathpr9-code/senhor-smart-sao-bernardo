@@ -1,0 +1,255 @@
+<title>Painel Senhor Smart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: painel de loja — cabeçalho com período, faixa de KPIs, gráfico de volume largo, depois grade 2 colunas de leitura do atendimento. */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --line: #dde3ea;
+  --grid: #e9edf2;
+  --ink: #0f1b2a;
+  --ink-2: #4a5768;
+  --ink-3: #7a8696;
+  --brand: #0e5c4a;          /* verde Senhor Smart (posto/loja) */
+  --brand-soft: #e3f1ec;
+  --s1: #2a78d6;             /* série 1: leads */
+  --s2: #eb6834;             /* série 2: chegaram à visita */
+  --seq-0: #eef4fc; --seq-1: #cde2fb; --seq-2: #9ec5f4; --seq-3: #6da7ec; --seq-4: #3987e5; --seq-5: #256abf; --seq-6: #104281;
+  --warn-bg: #fff4dc; --warn-ink: #7a4b00;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1218; --surface: #151c24; --line: #263140; --grid: #1e2833;
+    --ink: #eef2f6; --ink-2: #b4bfcc; --ink-3: #8592a2;
+    --brand: #4fc3a1; --brand-soft: #16302a;
+    --s1: #3987e5; --s2: #d95926;
+    --seq-0: #18222e; --seq-1: #184f95; --seq-2: #1c5cab; --seq-3: #256abf; --seq-4: #3987e5; --seq-5: #6da7ec; --seq-6: #b7d3f6;
+    --warn-bg: #3a2c0c; --warn-ink: #f5cf7a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1218; --surface: #151c24; --line: #263140; --grid: #1e2833;
+  --ink: #eef2f6; --ink-2: #b4bfcc; --ink-3: #8592a2;
+  --brand: #4fc3a1; --brand-soft: #16302a;
+  --s1: #3987e5; --s2: #d95926;
+  --seq-0: #18222e; --seq-1: #184f95; --seq-2: #1c5cab; --seq-3: #256abf; --seq-4: #3987e5; --seq-5: #6da7ec; --seq-6: #b7d3f6;
+  --warn-bg: #3a2c0c; --warn-ink: #f5cf7a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; display: grid; gap: 20px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.mark { width: 40px; height: 40px; border-radius: 10px; background: var(--brand); color: var(--surface); display: grid; place-items: center; font-family: var(--f-display); font-weight: 700; font-size: 17px; }
+h1 { font-family: var(--f-display); font-weight: 700; font-size: 26px; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { color: var(--ink-2); font-size: 13.5px; margin: 0; }
+.period { font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; font-variant-numeric: tabular-nums; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 4px; align-content: start; }
+.kpi .lbl { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); font-weight: 600; }
+.kpi .val { font-family: var(--f-display); font-size: 34px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.kpi .note { font-size: 13px; color: var(--ink-2); }
+.kpi.hl { border-color: var(--brand); background: var(--brand-soft); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+.card h2 { font-family: var(--f-display); font-size: 18px; font-weight: 700; margin: 0; }
+.card .desc { color: var(--ink-2); font-size: 13.5px; margin: 0; max-width: 68ch; }
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; align-items: flex-start; }
+.legend { display: flex; gap: 14px; font-size: 13px; color: var(--ink-2); flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+svg text { font-family: var(--f-body); fill: var(--ink-3); font-size: 11px; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 12.5px; padding: 8px 10px; border-radius: 8px; line-height: 1.45; z-index: 10; font-variant-numeric: tabular-nums; max-width: 240px; }
+.tip b { font-weight: 600; }
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 13.5px; }
+.bar .name { min-width: 0; overflow-wrap: anywhere; }
+.bar .num { font-family: var(--f-num); font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.bar .track { grid-column: 1 / -1; height: 8px; background: var(--grid); border-radius: 4px; overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--s1); }
+.funnel .fill { background: var(--brand); }
+.flag { background: var(--warn-bg); color: var(--warn-ink); border-radius: 8px; padding: 8px 12px; font-size: 13px; }
+.insights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ins { border-top: 3px solid var(--brand); padding-top: 10px; display: grid; gap: 4px; }
+.ins strong { font-family: var(--f-display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.ins span { font-size: 13.5px; color: var(--ink-2); }
+.heat-wrap { overflow-x: auto; }
+table.mini { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+table.mini th { text-align: left; font-weight: 600; color: var(--ink-3); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+table.mini td { padding: 7px 8px; border-bottom: 1px solid var(--grid); }
+table.mini td.r, table.mini th.r { text-align: right; }
+footer { color: var(--ink-3); font-size: 12.5px; }
+@media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid2, .insights { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .kpi .val { font-size: 28px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="mark" aria-hidden="true">SS</div>
+      <div>
+        <h1>Senhor Smart · Atendimento IA</h1>
+        <p class="sub">Loja Assunção, São Bernardo do Campo · WhatsApp</p>
+      </div>
+    </div>
+    <div class="period">05/05/2026 a 21/08/2026 · 109 dias</div>
+  </header>
+
+  <section class="kpis" aria-label="Indicadores principais">
+    <div class="kpi"><span class="lbl">Leads atendidos</span><span class="val" id="k-leads">3.891</span><span class="note">≈ 36 por dia, todos respondidos pela IA</span></div>
+    <div class="kpi hl"><span class="lbl">Chegaram à visita</span><span class="val">658</span><span class="note">16,9% dos leads combinaram ir à loja</span></div>
+    <div class="kpi"><span class="lbl">Fora do horário da loja</span><span class="val">38%</span><span class="note">1.169 leads chegaram à noite, madrugada ou domingo</span></div>
+    <div class="kpi"><span class="lbl">Pediram iPhone</span><span class="val">717</span><span class="note">18,4% dos leads. Demanda que o boleto não atende</span></div>
+  </section>
+
+  <section class="card" aria-labelledby="t-vol">
+    <div class="head">
+      <div>
+        <h2 id="t-vol">Volume diário de leads</h2>
+        <p class="desc">Cada conversa nova no WhatsApp e quantas delas terminaram com visita combinada.</p>
+      </div>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Leads</span><span><i style="background:var(--s2)"></i>Chegaram à visita</span></div>
+    </div>
+    <svg id="daily" class="chart" viewBox="0 0 1000 260" role="img" aria-label="Leads e visitas por dia"></svg>
+    <p class="flag">Entre 18/06 e 02/07 o registro de estágio ficou fora do ar: as visitas desse período existem, mas não foram gravadas.</p>
+  </section>
+
+  <section class="grid2">
+    <div class="card" aria-labelledby="t-fun">
+      <h2 id="t-fun">Funil do atendimento</h2>
+      <p class="desc">Até onde cada lead chegou na conversa com a IA.</p>
+      <div class="bars funnel" id="funnel"></div>
+    </div>
+    <div class="card" aria-labelledby="t-src">
+      <h2 id="t-src">De onde vêm os leads</h2>
+      <p class="desc">Pela primeira mensagem da conversa. A mensagem pronta do anúncio identifica quem clicou na campanha.</p>
+      <div class="bars" id="source"></div>
+      <table class="mini" aria-label="Leads por mês">
+        <thead><tr><th>Mês</th><th class="r">Leads</th><th class="r">Visitas</th><th class="r">Taxa</th></tr></thead>
+        <tbody id="months"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="t-heat">
+    <div class="head">
+      <div>
+        <h2 id="t-heat">Quando os clientes chamam</h2>
+        <p class="desc">Leads por dia da semana e hora. A loja abre 8h30 e fecha 18h30 (sábado 16h30): tudo fora dessa faixa só foi atendido porque a IA estava lá.</p>
+      </div>
+    </div>
+    <div class="heat-wrap"><svg id="heat" class="chart" viewBox="0 0 1000 250" role="img" aria-label="Mapa de calor de leads por dia e hora" style="min-width:640px"></svg></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card" aria-labelledby="t-mod">
+      <h2 id="t-mod">Aparelhos mais procurados</h2>
+      <p class="desc">Modelo em que o lead demonstrou interesse durante a conversa.</p>
+      <div class="bars" id="models"></div>
+    </div>
+    <div class="card" aria-labelledby="t-ins">
+      <h2 id="t-ins">O que as conversas revelam</h2>
+      <p class="desc">Sinais que a IA extrai de cada mensagem e que nenhum CRM de funil mostra.</p>
+      <div class="insights" style="grid-template-columns:1fr">
+        <div class="ins"><strong>236 conversas</strong><span>pediram iPhone pelo nome. Hoje iPhone só sai à vista: vale testar uma linha de seminovos ou parceria de crédito.</span></div>
+        <div class="ins"><strong>216 conversas</strong><span>pediram modelo fora do catálogo (Galaxy S23, Moto E, Xiaomi). Mostra onde ampliar o estoque.</span></div>
+        <div class="ins"><strong>Desempenho</strong><span>é a principal dor declarada para trocar de aparelho, à frente de “só o básico” e câmera.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Dados do banco de atendimento da IA (conversas, estágios e intenções). Visitas = conversas que chegaram a “pronto para visita” ou foram transferidas a um vendedor. Origem medida em 3.088 conversas com primeira mensagem registrada.</footer>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const daily = [["2026-05-05",8,0],["2026-05-06",5,0],["2026-05-07",2,0],["2026-05-11",10,0],["2026-05-12",24,0],["2026-05-13",8,0],["2026-05-14",33,10],["2026-05-15",24,9],["2026-05-16",39,11],["2026-05-17",31,10],["2026-05-18",49,9],["2026-05-19",41,11],["2026-05-20",42,7],["2026-05-21",35,13],["2026-05-22",32,5],["2026-05-23",15,6],["2026-05-24",33,9],["2026-05-25",40,6],["2026-05-26",37,4],["2026-05-27",33,6],["2026-05-28",38,7],["2026-05-29",22,4],["2026-05-30",28,3],["2026-05-31",41,5],["2026-06-01",42,4],["2026-06-02",39,7],["2026-06-03",35,7],["2026-06-04",41,11],["2026-06-05",26,3],["2026-06-06",26,6],["2026-06-07",33,4],["2026-06-08",44,8],["2026-06-09",38,11],["2026-06-10",36,9],["2026-06-11",35,6],["2026-06-12",24,7],["2026-06-13",29,6],["2026-06-14",42,12],["2026-06-15",44,9],["2026-06-16",37,11],["2026-06-17",47,7],["2026-06-18",30,0],["2026-06-19",25,0],["2026-06-20",28,0],["2026-06-21",31,0],["2026-06-22",21,0],["2026-06-23",71,0],["2026-06-24",60,0],["2026-06-25",37,0],["2026-06-26",46,0],["2026-06-27",26,0],["2026-06-28",17,0],["2026-06-29",25,0],["2026-06-30",34,0],["2026-07-01",32,0],["2026-07-02",34,0],["2026-07-03",26,3],["2026-07-04",38,8],["2026-07-05",10,4],["2026-07-06",44,12],["2026-07-07",28,7],["2026-07-08",29,9],["2026-07-09",32,11],["2026-07-10",40,12],["2026-07-11",26,10],["2026-07-12",41,9],["2026-07-13",59,9],["2026-07-14",38,9],["2026-07-15",41,9],["2026-07-16",42,6],["2026-07-17",24,6],["2026-07-18",43,6],["2026-07-19",12,4],["2026-07-20",32,7],["2026-07-21",50,5],["2026-07-22",41,5],["2026-07-23",41,3],["2026-07-24",40,9],["2026-07-25",40,6],["2026-07-26",33,9],["2026-07-27",42,8],["2026-07-28",53,10],["2026-07-29",82,10],["2026-07-30",64,11],["2026-07-31",52,11],["2026-08-01",40,5],["2026-08-02",1,1],["2026-08-03",53,6],["2026-08-04",60,20],["2026-08-05",63,8],["2026-08-06",59,8],["2026-08-07",67,17],["2026-08-08",53,3],["2026-08-09",2,1],["2026-08-10",70,13],["2026-08-11",56,7],["2026-08-12",60,15],["2026-08-13",43,9],["2026-08-14",50,9],["2026-08-15",45,10],["2026-08-16",1,0],["2026-08-17",47,7],["2026-08-18",59,11],["2026-08-19",40,8],["2026-08-20",50,5],["2026-08-21",24,4]];
+// [isodow 1=seg..7=dom, hora, leads]
+const heat = [[1,0,6],[1,1,3],[1,2,3],[1,3,5],[1,4,5],[1,5,5],[1,6,14],[1,7,18],[1,8,24],[1,9,20],[1,10,45],[1,11,46],[1,12,53],[1,13,43],[1,14,49],[1,15,38],[1,16,43],[1,17,33],[1,18,38],[1,19,24],[1,20,31],[1,21,28],[1,22,28],[1,23,20],[2,0,20],[2,1,7],[2,2,8],[2,3,5],[2,4,8],[2,5,6],[2,6,13],[2,7,15],[2,8,18],[2,9,42],[2,10,37],[2,11,41],[2,12,43],[2,13,49],[2,14,45],[2,15,57],[2,16,53],[2,17,40],[2,18,37],[2,19,34],[2,20,38],[2,21,15],[2,22,28],[2,23,14],[3,0,20],[3,1,10],[3,2,7],[3,3,7],[3,4,1],[3,5,10],[3,6,13],[3,7,23],[3,8,36],[3,9,36],[3,10,48],[3,11,40],[3,12,42],[3,13,56],[3,14,34],[3,15,31],[3,16,44],[3,17,34],[3,18,34],[3,19,23],[3,20,26],[3,21,33],[3,22,25],[3,23,21],[4,0,12],[4,1,19],[4,2,7],[4,3,3],[4,4,4],[4,5,7],[4,6,9],[4,7,25],[4,8,26],[4,9,30],[4,10,39],[4,11,36],[4,12,48],[4,13,54],[4,14,45],[4,15,30],[4,16,32],[4,17,37],[4,18,28],[4,19,29],[4,20,24],[4,21,28],[4,22,25],[4,23,19],[5,0,10],[5,1,9],[5,2,5],[5,3,7],[5,4,7],[5,5,4],[5,6,11],[5,7,13],[5,8,24],[5,9,26],[5,10,39],[5,11,37],[5,12,37],[5,13,41],[5,14,35],[5,15,27],[5,16,34],[5,17,37],[5,18,23],[5,19,24],[5,20,24],[5,21,21],[5,22,10],[5,23,17],[6,0,7],[6,1,5],[6,2,3],[6,3,1],[6,4,5],[6,5,5],[6,6,5],[6,7,12],[6,8,36],[6,9,26],[6,10,42],[6,11,34],[6,12,51],[6,13,34],[6,14,33],[6,15,35],[6,16,29],[6,17,25],[6,18,31],[6,19,18],[6,20,13],[6,21,8],[6,22,9],[6,23,9],[7,0,9],[7,1,6],[7,2,1],[7,3,4],[7,4,0],[7,5,2],[7,6,3],[7,7,9],[7,8,21],[7,9,19],[7,10,18],[7,11,23],[7,12,15],[7,13,21],[7,14,29],[7,15,24],[7,16,25],[7,17,21],[7,18,17],[7,19,17],[7,20,11],[7,21,13],[7,22,12],[7,23,8]];
+const funnel = [["Iniciaram conversa", 3891], ["Engajaram após a abertura", 2587], ["Pediram condições / localização", 1242], ["Chegaram à visita", 658], ["Transferidos ao vendedor", 332]];
+const source = [["Anúncio Meta (mensagem pronta)", 2045], ["Contato direto / orgânico", 1043]];
+const months = [["Maio", 667, 135], ["Junho (registro parcial)", 1070, 128], ["Julho", 1206, 227], ["Agosto (até 21)", 948, 168]];
+const models = [["Motorola Moto G35 5G", 441], ["Realme Note 60", 215], ["Samsung Galaxy A17 4G", 162], ["Realme C73 (128 e 256GB)", 161], ["Realme Note 60x", 109], ["Poco C71", 66], ["Samsung Galaxy A07", 31]];
+
+const fmt = n => n.toLocaleString("pt-BR");
+const pct = (a, b) => (100 * a / b).toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + "%";
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const tip = document.getElementById("tip");
+function showTip(html, x, y) { tip.innerHTML = html; tip.hidden = false; const r = tip.getBoundingClientRect(); let L = x + 14, T = y + 14; if (L + r.width > innerWidth - 8) L = x - r.width - 14; if (T + r.height > innerHeight - 8) T = y - r.height - 14; tip.style.left = L + "px"; tip.style.top = T + "px"; }
+function hideTip() { tip.hidden = true; }
+const dfmt = s => s.slice(8, 10) + "/" + s.slice(5, 7);
+const wd = ["", "seg", "ter", "qua", "qui", "sex", "sáb", "dom"];
+
+// Volume diário: área de leads + linha de visitas, escala única
+(function () {
+  const svg = document.getElementById("daily");
+  const W = 1000, H = 260, m = { l: 36, r: 12, t: 12, b: 28 };
+  const t0 = Date.parse(daily[0][0]), t1 = Date.parse(daily[daily.length - 1][0]);
+  const x = d => m.l + (Date.parse(d) - t0) / (t1 - t0) * (W - m.l - m.r);
+  const yMax = 90, y = v => H - m.b - v / yMax * (H - m.t - m.b);
+  // faixa sem registro de visitas
+  el("rect", { x: x("2026-06-18"), y: m.t, width: x("2026-07-02") - x("2026-06-18"), height: H - m.t - m.b, fill: "var(--grid)" }, svg);
+  for (let v = 0; v <= yMax; v += 30) {
+    el("line", { x1: m.l, x2: W - m.r, y1: y(v), y2: y(v), stroke: "var(--grid)", "stroke-width": 1 }, svg);
+    el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, svg).textContent = v;
+  }
+  ["2026-05-15", "2026-06-01", "2026-06-15", "2026-07-01", "2026-07-15", "2026-08-01", "2026-08-15"].forEach(d => {
+    el("text", { x: x(d), y: H - 8, "text-anchor": "middle" }, svg).textContent = dfmt(d);
+  });
+  const pts = daily.map(d => [x(d[0]), y(d[1])]);
+  const area = "M" + pts[0][0] + "," + y(0) + " L" + pts.map(p => p.join(",")).join(" L") + " L" + pts[pts.length - 1][0] + "," + y(0) + " Z";
+  el("path", { d: area, fill: "var(--s1)", "fill-opacity": 0.12 }, svg);
+  el("path", { d: "M" + pts.map(p => p.join(",")).join(" L"), fill: "none", stroke: "var(--s1)", "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+  el("path", { d: "M" + daily.map(d => x(d[0]) + "," + y(d[2])).join(" L"), fill: "none", stroke: "var(--s2)", "stroke-width": 2, "stroke-linejoin": "round" }, svg);
+  const last = daily[daily.length - 1];
+  el("circle", { cx: x(last[0]), cy: y(last[1]), r: 4, fill: "var(--s1)", stroke: "var(--surface)", "stroke-width": 2 }, svg);
+  const cross = el("line", { y1: m.t, y2: H - m.b, stroke: "var(--ink-3)", "stroke-width": 1, "stroke-dasharray": "3 3", visibility: "hidden" }, svg);
+  const hit = el("rect", { x: m.l, y: m.t, width: W - m.l - m.r, height: H - m.t - m.b, fill: "transparent" }, svg);
+  hit.addEventListener("pointermove", e => {
+    const r = svg.getBoundingClientRect(); const px = (e.clientX - r.left) / r.width * W;
+    let best = daily[0], bd = 1e9; for (const d of daily) { const dd = Math.abs(x(d[0]) - px); if (dd < bd) { bd = dd; best = d; } }
+    cross.setAttribute("x1", x(best[0])); cross.setAttribute("x2", x(best[0])); cross.setAttribute("visibility", "visible");
+    const gap = best[0] >= "2026-06-18" && best[0] <= "2026-07-02";
+    showTip(`<b>${dfmt(best[0])}</b><br>Leads: ${best[1]}<br>Chegaram à visita: ${gap ? "sem registro" : best[2]}`, e.clientX, e.clientY);
+  });
+  hit.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); hideTip(); });
+})();
+
+function barList(id, rows, opts = {}) {
+  const box = document.getElementById(id); const max = opts.max || Math.max(...rows.map(r => r[1]));
+  rows.forEach(([name, v]) => {
+    const row = document.createElement("div"); row.className = "bar";
+    row.innerHTML = `<span class="name">${name}</span><span class="num">${fmt(v)}${opts.total ? " · " + pct(v, opts.total) : ""}</span><div class="track"><div class="fill" style="width:${(100 * v / max).toFixed(1)}%"></div></div>`;
+    box.appendChild(row);
+  });
+}
+barList("funnel", funnel, { total: 3891 });
+barList("source", source, { total: 3088 });
+barList("models", models);
+document.getElementById("months").innerHTML = months.map(([m, l, v]) => `<tr><td>${m}</td><td class="r">${fmt(l)}</td><td class="r">${fmt(v)}</td><td class="r">${pct(v, l)}</td></tr>`).join("");
+
+// Mapa de calor dia × hora
+(function () {
+  const svg = document.getElementById("heat");
+  const m = { l: 40, t: 8, b: 26 }, cw = (1000 - m.l - 4) / 24, ch = (250 - m.t - m.b) / 7;
+  const max = Math.max(...heat.map(h => h[2]));
+  const steps = ["--seq-0", "--seq-1", "--seq-2", "--seq-3", "--seq-4", "--seq-5", "--seq-6"];
+  const open = (d, h) => d <= 5 ? (h >= 9 && h < 18) || h === 8 || h === 18 : d === 6 ? h >= 8 && h < 17 : false;
+  for (let d = 1; d <= 7; d++) el("text", { x: m.l - 8, y: m.t + (d - 0.5) * ch + 4, "text-anchor": "end" }, svg).textContent = wd[d];
+  for (let h = 0; h < 24; h += 3) el("text", { x: m.l + (h + 0.5) * cw, y: 250 - 8, "text-anchor": "middle" }, svg).textContent = h + "h";
+  heat.forEach(([d, h, n]) => {
+    const s = steps[Math.min(6, Math.round(n / max * 6))];
+    const r = el("rect", { x: m.l + h * cw + 1, y: m.t + (d - 1) * ch + 1, width: cw - 2, height: ch - 2, rx: 3, fill: `var(${s})` }, svg);
+    r.addEventListener("pointermove", e => showTip(`<b>${wd[d]}, ${h}h–${h + 1}h</b><br>${n} leads<br>${open(d, h) ? "Loja aberta" : "Loja fechada: só a IA atendeu"}`, e.clientX, e.clientY));
+    r.addEventListener("pointerleave", hideTip);
+  });
+})();
+</script>

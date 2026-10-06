@@ -11,7 +11,7 @@ with a as (
   select *, (primeira_msg_em at time zone 'America/Sao_Paulo') as local_em,
          extract(epoch from (primeira_resposta_em - primeira_msg_em)) as resp_s
   from atendimento
-  where (primeira_msg_em at time zone 'America/Sao_Paulo')::date between p_inicio and p_fim
+  where ticket_id > 0 and (primeira_msg_em at time zone 'America/Sao_Paulo')::date between p_inicio and p_fim
     and (p_canal is null or canal = p_canal)
 ),
 tot as (

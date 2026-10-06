@@ -2,21 +2,23 @@
 Maquina de estado da Senhor Smart (assistencia tecnica) — servico senhor-smart-estado.
 
 Framework v1.2 (MP AI Platform): LLM interpreta, schema restringe, codigo decide.
-  Extrator (fora daqui) -> leitura
+  Extrator (GPT-5.4-mini, fora daqui) -> leitura
   Carregar Contexto (SQL, cego ao estado) -> contexto_dados
   Maquina (aqui) -> resolve entidades, decide o movimento do turno, calcula metricas
-  Narrador (fora daqui) -> so narra a conducao
+  Narrador (GPT-4.1-mini, fora daqui) -> so narra a conducao
 
-Banco = dado. Maquina = decisao. LLM = fala.
+Regra da conducao (ADR-0013): a maquina entrega DADO e ORIENTACAO, nunca frase pronta.
+O narrador e literal: frase pronta aqui vira frase copiada la.
 
 Contrato de entrada:
   {
     "ticket_id": int,
     "estado": {...} | None,           # None no 1o turno (o shape inicial e daqui)
     "leitura": {...},                 # saida do extrator (schema leitura_assistencia)
-    "foto": {...} | None,             # saida do no de visao, quando o cliente mandou imagem
+    "foto": {...} | None,             # saida do no de visao (so quando tipo == aparelho)
     "contexto_dados": {...},          # recorte do Carregar Contexto
     "agora": "ISO8601",               # horario da mensagem
+    "nome_whatsapp": str | None,      # nome do contato no WhatsApp (pode vir emoji, numero...)
     "mensagem_texto": str | None,     # body.lastMessage (duplicata)
     "mensagem_data": str | None,      # body.lastMessageDate (duplicata)
     "anuncio": str | None,            # titulo/ctwa do anuncio, quando veio de clique
@@ -33,23 +35,21 @@ from copy import deepcopy
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-VERSAO = "1.0.0"
+VERSAO = "1.1.0"
 TZ = ZoneInfo("America/Sao_Paulo")
 
 ETAPAS = ["novo", "triagem", "diagnostico", "orcamento", "agendado"]
 INTENCOES_CRITICAS = {"reclamacao", "status_servico"}
 MAX_PERGUNTAS_MODELO = 2          # depois disso, segue sem preco (avaliacao na loja)
 SENTIMENTOS_ACOLHER = {"ansioso", "frustrado", "irritado"}
+DIAS = ["segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"]
+NOMES_GENERICOS = {"cliente", "contato", "whatsapp", "usuario", "user", "teste", "loja", "celular", "eu", "oi", "ola"}
+# pergunta do cliente -> chave de fato em loja (None = vem de outro lugar)
 PERGUNTAS_FACTUAIS = {
-    # pergunta do cliente -> chave em loja (fato autorizado) ou None quando vem de outro lugar
-    "endereco": "endereco",
-    "horario": "horario_texto",
-    "garantia": "garantia_servico",
-    "pagamento": "formas_pagamento",
-    "diagnostico": "diagnostico",
-    "leva_e_traz": "leva_e_traz",
-    "prazo": None,                # prazo do servico em foco
+    "endereco": "endereco", "horario": None, "garantia": "garantia_servico", "pagamento": "formas_pagamento",
+    "diagnostico": "avaliacao_sem_custo", "leva_e_traz": "leva_e_traz", "prazo": None,
 }
+OBJECAO_LEGADA = {"objecao_preco": "preco_alto"}
 
 
 # ---------------------------------------------------------------------------
@@ -75,15 +75,17 @@ def _tem_termo(texto_norm: str, termo: str) -> bool:
     return re.search(r"(?<![a-z0-9])" + re.escape(_norm(termo)) + r"(?![a-z0-9])", texto_norm) is not None
 
 
-def _brl(v) -> str:
-    return "R$ " + f"{int(round(float(v))):,}".replace(",", ".")
-
-
-def _primeiro_nome(nome: str | None) -> str | None:
+def nome_valido(nome: str | None) -> str | None:
+    """Primeiro nome utilizavel, ou None quando o nome do WhatsApp e emoji, numero, sigla ou generico."""
     if not nome:
         return None
-    m = re.search(r"[A-Za-zÀ-ÿ]{2,}", nome)
-    return m.group(0).capitalize() if m else None
+    m = re.match(r"\s*([A-Za-zÀ-ÿ]{2,})", nome)
+    if not m:
+        return None
+    primeiro = m.group(1)
+    if _norm(primeiro) in NOMES_GENERICOS or primeiro.isupper() and len(primeiro) <= 3:
+        return None
+    return primeiro.capitalize()
 
 
 # ---------------------------------------------------------------------------
@@ -93,18 +95,20 @@ def _estado_inicial() -> dict:
     return {
         "versao": VERSAO,
         "turnos": 0,
-        "cliente": {"nome": None},
+        "cliente": {"nome": None, "nome_fonte": None, "nome_perguntado": False},
         "origem": None,                 # {"canal", "campanha"}
         "primeira_msg_em": None,
         "fora_horario_inicio": None,
+        "impacto": None,                # o que o problema esta custando ao cliente (palavras dele)
         "trabalhos": [],                # ver _novo_trabalho
         "foco_atual": None,
         "abertura_feita": False,
         "fatos_informados": [],         # fatos da loja ja ditos (nao repetir)
         "convite_visita_feito": False,
-        "objecao_tratada": False,
+        "objecoes": {},                 # codigo -> vezes tratada
         "nao_atende_avisado": [],
-        "visita": None,                 # {"quando"}
+        "visita": None,                 # {"quando", "combinada_em"}
+        "lembrete_visita_enviado": False,
         "etapa": "novo",
         "etapa_max": "novo",
         "transferido": False,
@@ -119,15 +123,13 @@ def _novo_trabalho(estado: dict, categoria: str | None) -> dict:
     t = {
         "id": f"{categoria or 'indefinido'}:{n}",
         "categoria": categoria,
-        "marca": None,
-        "modelo": None,
-        "linha": None,
+        "marca": None, "modelo": None, "linha": None,
         "modelo_status": "insuficiente",     # resolvido | insuficiente
         "defeito": None,
         "danos_foto": [],
         "servico_sugerido": None,
         "servico_id": None,
-        "servico_status": "insuficiente",    # resolvido | ambiguo | insuficiente
+        "servico_status": "insuficiente",    # resolvido | ambiguo | avaliacao | insuficiente
         "servico_fonte": None,
         "servico_opcoes": [],
         "faixa": None,                       # {"min","max","validado"}
@@ -171,6 +173,21 @@ def _cotar(ctx: dict, sid: str, linha: str | None) -> dict | None:
     return {"min": p["min"], "max": p["max"], "validado": bool(p.get("validado"))}
 
 
+def _horario_loja(ctx: dict) -> list[dict]:
+    """Horario como dado: [{dias: [...], abre, fecha}] agrupando dias iguais."""
+    grupos: list[dict] = []
+    por_dia = {h["dia_semana"]: h for h in ctx.get("horario", [])}
+    for i, nome in enumerate(DIAS):
+        h = por_dia.get((i + 1) % 7)
+        if not h or h.get("fechado"):
+            continue
+        if grupos and grupos[-1]["abre"] == h["abre"] and grupos[-1]["fecha"] == h["fecha"]:
+            grupos[-1]["dias"].append(nome)
+        else:
+            grupos.append({"dias": [nome], "abre": h["abre"], "fecha": h["fecha"]})
+    return grupos
+
+
 # ---------------------------------------------------------------------------
 # Resolvedor: modelo e servico (evidencia deterministica antes do LLM)
 # ---------------------------------------------------------------------------
@@ -178,8 +195,7 @@ def resolver_modelo(ctx: dict, texto: str | None, categoria: str | None) -> dict
     t = _norm(texto)
     if not t:
         return None
-    modelos = sorted(ctx.get("modelos", []), key=lambda m: m.get("prioridade", 100))
-    for m in modelos:
+    for m in sorted(ctx.get("modelos", []), key=lambda m: m.get("prioridade", 100)):
         if categoria and m["categoria"] != categoria:
             continue
         g = _regex_pg(m["padrao"]).search(t)
@@ -191,7 +207,7 @@ def resolver_modelo(ctx: dict, texto: str | None, categoria: str | None) -> dict
 
 
 def resolver_servico(ctx: dict, trabalho: dict) -> None:
-    """RESOLVED / AMBIGUOUS / INSUFFICIENT. Sintoma no texto do cliente e evidencia
+    """resolvido / ambiguo / avaliacao / insuficiente. Sintoma no texto do cliente e evidencia
     deterministica; a sugestao do extrator so desempata ou preenche quando nao ha sintoma."""
     cat, defeito = trabalho["categoria"], trabalho["defeito"]
     sugerido = trabalho.get("servico_sugerido")
@@ -240,6 +256,11 @@ def _hhmm(s: str | None) -> time | None:
     return time.fromisoformat(s) if s else None
 
 
+def periodo_do_dia(agora: datetime) -> str:
+    h = agora.hour
+    return "bom_dia" if 5 <= h < 12 else "boa_tarde" if 12 <= h < 18 else "boa_noite"
+
+
 def situacao_horario(ctx: dict, agora: datetime) -> dict:
     horarios = {h["dia_semana"]: h for h in ctx.get("horario", [])}
     feriados = {f["data"] for f in ctx.get("feriados", [])}
@@ -255,14 +276,13 @@ def situacao_horario(ctx: dict, agora: datetime) -> dict:
     aberto = bool(exp and exp[0] <= agora.time() < exp[1])
     proxima = None
     if not aberto:
-        dias = ["segunda", "terça", "quarta", "quinta", "sexta", "sábado", "domingo"]
         for i in range(0, 8):
             d = hoje + timedelta(days=i)
             e = expediente(d)
             if not e or (i == 0 and agora.time() >= e[0]):
                 continue
-            rotulo = "hoje" if i == 0 else "amanhã" if i == 1 else dias[d.weekday()]
-            proxima = f"{rotulo} às {e[0].strftime('%Hh%M').replace('h00', 'h')}"
+            proxima = {"dia": "hoje" if i == 0 else "amanha" if i == 1 else DIAS[d.weekday()],
+                       "hora": e[0].strftime("%H:%M")}
             break
     return {"aberto": aberto, "proxima_abertura": proxima}
 
@@ -281,12 +301,9 @@ def detectar_origem(ctx: dict, primeira_mensagem: str | None, anuncio: str | Non
 # ---------------------------------------------------------------------------
 def _equipamentos_do_turno(leitura: dict, foto: dict | None) -> list[dict]:
     eqs = [dict(e) for e in (leitura.get("equipamentos") or [])]
-    if foto:
-        eqs.append({
-            "categoria": foto.get("categoria"), "marca": foto.get("marca"), "modelo": foto.get("modelo"),
-            "defeito": None, "servico_sugerido": None, "danos_foto": foto.get("danos") or [],
-            "fonte": "foto",
-        })
+    if foto and foto.get("tipo", "aparelho") == "aparelho":
+        eqs.append({"categoria": foto.get("categoria"), "marca": foto.get("marca"), "modelo": foto.get("modelo"),
+                    "defeito": None, "servico_sugerido": None, "danos_foto": foto.get("danos") or []})
     return eqs
 
 
@@ -294,10 +311,7 @@ def _alvo(estado: dict, categoria: str | None) -> dict | None:
     pend = [t for t in estado["trabalhos"] if t["status"] in ("pendente", "cotado")]
     if categoria:
         mesmo = next((t for t in pend if t["categoria"] == categoria), None)
-        if mesmo:
-            return mesmo
-        sem_cat = next((t for t in pend if t["categoria"] is None), None)
-        return sem_cat
+        return mesmo or next((t for t in pend if t["categoria"] is None), None)
     foco = next((t for t in pend if t["id"] == estado.get("foco_atual")), None)
     if foco:
         return foco
@@ -305,7 +319,6 @@ def _alvo(estado: dict, categoria: str | None) -> dict | None:
 
 
 def ingerir(estado: dict, leitura: dict, foto: dict | None, ctx: dict) -> list[dict]:
-    """Devolve os trabalhos que mudaram neste turno."""
     mudaram = []
     for eq in _equipamentos_do_turno(leitura, foto):
         cat = eq.get("categoria") if _categoria(ctx, eq.get("categoria")) else None
@@ -336,7 +349,7 @@ def ingerir(estado: dict, leitura: dict, foto: dict | None, ctx: dict) -> list[d
     for t, antes in mudaram:
         _completar(t, ctx)
         if t["cotado"] and (t["servico_id"], t["linha"]) != antes:
-            t["cotado"], t["status"] = False, "pendente"   # mudou o servico ou o modelo: cota de novo
+            t["cotado"], t["status"] = False, "pendente"   # mudou o servico ou o modelo: orienta de novo
     return [t for t, _ in mudaram]
 
 
@@ -382,11 +395,12 @@ def _selecionar(estado: dict) -> dict | None:
     return foco or (pend[0] if pend else None)
 
 
-def _coletar(t: dict | None, dado: str, ctx: dict) -> dict:
-    vezes = (t or {}).get("perguntas", {}).get(dado, 0) if t else 0
+def _coletar(t: dict | None, dado: str, ctx: dict, motivo: str | None = None) -> dict:
+    vezes = t["perguntas"].get(dado, 0) if t else 0
     if t is not None:
         t["perguntas"][dado] = vezes + 1
-    c = {"dado": dado, "re_perguntando": vezes > 0, "pode_mandar_foto": dado in ("modelo", "defeito")}
+    c = {"dado": dado, "re_perguntando": vezes > 0, "pode_mandar_foto": dado in ("modelo", "defeito"),
+         "motivo": motivo}
     if dado == "servico" and t:
         c["opcoes"] = [_servico(ctx, sid)["nome"] for sid in t["servico_opcoes"]]
     if dado == "equipamento":
@@ -394,57 +408,114 @@ def _coletar(t: dict | None, dado: str, ctx: dict) -> dict:
     return c
 
 
-def _orientacao(t: dict, ctx: dict) -> dict:
-    """Orcamento (faixa) quando autorizado; senao, avaliacao na loja."""
+def _detalhes(ctx: dict, sids: list[str]) -> dict:
+    """Une os detalhes estruturados dos servicos (pode_ser, cuidados, inclui, beneficio...)."""
+    out: dict = {}
+    for sid in sids:
+        for k, v in ((_servico(ctx, sid) or {}).get("detalhes") or {}).items():
+            if isinstance(v, list):
+                out[k] = list(dict.fromkeys(out.get(k, []) + v))
+            else:
+                out.setdefault(k, v)
+    return out
+
+
+def _orientacao(t: dict, ctx: dict, estado: dict) -> dict:
+    """Dado para o narrador orientar o equipamento: faixa (numeros) ou avaliacao, detalhes e desejo."""
     s = _servico(ctx, t["servico_id"])
-    cat = _categoria(ctx, t["categoria"]) or {}
-    base = {"equipamento": cat.get("nome"), "modelo": t["modelo"], "defeito": t["defeito"],
-            "servico": s["nome"] if s else None, "prazo": s["prazo"] if s else None,
-            "observacao": s["observacao"] if s else None}
+    sids = [s["id"]] if s else list(t.get("servico_opcoes") or [])
+    o = {"equipamento": (_categoria(ctx, t["categoria"]) or {}).get("nome"), "modelo": t["modelo"],
+         "defeito_relatado": t["defeito"], "danos_na_foto": t.get("danos_foto") or None,
+         "servico": s["nome"] if s else None, "prazo": s["prazo"] if s else None,
+         "detalhes": _detalhes(ctx, sids) or None,
+         "desejo": {"impacto_relatado": estado.get("impacto"),
+                    "beneficio": _detalhes(ctx, sids).get("beneficio")}}
     if t["faixa"]:
-        return {"tipo": "orcamento", **base,
-                "faixa": f"entre {_brl(t['faixa']['min'])} e {_brl(t['faixa']['max'])}",
+        return {"tipo": "orcamento", **o, "faixa": {"min": t["faixa"]["min"], "max": t["faixa"]["max"]},
                 "valor_final_na_avaliacao": True}
+    if not s and t.get("servico_opcoes"):
+        o["possibilidades"] = [_servico(ctx, sid)["nome"] for sid in t["servico_opcoes"] if _servico(ctx, sid)]
     motivo = ("servico_exige_avaliacao" if s and s["exige_diagnostico"]
               else "modelo_nao_identificado" if s else "defeito_precisa_de_avaliacao")
-    if not s and t["servico_opcoes"]:
-        opcoes = [_servico(ctx, sid) for sid in t["servico_opcoes"]]
-        base["possibilidades"] = [o["nome"] for o in opcoes if o]
-        base["observacao"] = " ".join(o["observacao"] for o in opcoes if o and o.get("observacao")) or None
-    return {"tipo": "avaliacao", **base, "faixa": None, "motivo": motivo}
+    return {"tipo": "avaliacao", **o, "faixa": None, "motivo": motivo}
 
 
 # ---------------------------------------------------------------------------
-# Fatos autorizados para responder perguntas diretas (responde primeiro, conduz depois)
+# Fatos autorizados (responde primeiro, conduz depois)
 # ---------------------------------------------------------------------------
+def _fato(ctx: dict, chave: str):
+    """Fato autorizado ou None. Fatos nao confirmados nunca saem daqui."""
+    if chave == "horario_texto":
+        return _horario_loja(ctx)
+    return (ctx.get("loja") or {}).get(chave)
+
+
 def _responder(estado: dict, perguntas: list[str], ctx: dict, foco: dict | None) -> list[dict]:
-    loja = ctx.get("loja", {})
     out = []
     for p in perguntas or []:
         if p not in PERGUNTAS_FACTUAIS:
             continue
-        chave = PERGUNTAS_FACTUAIS[p]
         if p == "prazo":
             s = _servico(ctx, (foco or {}).get("servico_id"))
             valor = s["prazo"] if s else None
+        elif p == "horario":
+            valor = _horario_loja(ctx)
         else:
-            valor = loja.get(chave)
-        out.append({"pergunta": p, "fato": valor, "sem_informacao": valor is None})
+            valor = _fato(ctx, PERGUNTAS_FACTUAIS[p])
+        out.append({"pergunta": p, "dado": valor, "sem_informacao": valor is None})
         if valor is not None and p not in estado["fatos_informados"]:
             estado["fatos_informados"].append(p)
     return out
 
 
 def _dados_visita(estado: dict, ctx: dict, horario: dict) -> dict:
-    loja = ctx.get("loja", {})
     d = {"loja_aberta_agora": horario["aberto"], "proxima_abertura": horario["proxima_abertura"]}
     if "endereco" not in estado["fatos_informados"]:
-        d["endereco"] = loja.get("endereco")
+        d["endereco"] = _fato(ctx, "endereco")
+        d["referencia"] = _fato(ctx, "referencia_local")
         estado["fatos_informados"].append("endereco")
     if "horario" not in estado["fatos_informados"]:
-        d["horario"] = loja.get("horario_texto")
+        d["horario"] = _horario_loja(ctx)
         estado["fatos_informados"].append("horario")
     return d
+
+
+# ---------------------------------------------------------------------------
+# Objecoes (dado da biblioteca + fatos autorizados; nunca resposta pronta)
+# ---------------------------------------------------------------------------
+def _argumento(chave: str, ctx: dict, estado: dict, foco: dict | None, horario: dict):
+    if chave == "valor_final_na_avaliacao":
+        return True
+    if chave == "prazo_servico":
+        s = _servico(ctx, (foco or {}).get("servico_id"))
+        return s["prazo"] if s else None
+    if chave == "loja_aberta_agora":
+        return horario["aberto"]
+    return _fato(ctx, chave)
+
+
+def tratar_objecao(estado: dict, codigo: str, ctx: dict, horario: dict) -> dict | None:
+    obj = next((o for o in ctx.get("objecoes", []) if o["codigo"] == codigo), None)
+    if not obj:
+        return None
+    vezes = estado["objecoes"].get(codigo, 0)
+    estado["objecoes"][codigo] = vezes + 1
+    cotados = [t for t in estado["trabalhos"] if t["cotado"]]
+    foco = cotados[0] if cotados else _selecionar(estado)
+    if vezes > 0:
+        # segunda vez: nao argumenta de novo, nao convida de novo; respeita e deixa a porta aberta
+        return {"codigo": codigo, "nome": obj["nome"], "primeira_vez": False, "insistir": False,
+                "proximo_passo": "deixar_porta_aberta", "nunca": obj["nunca"]}
+    args = []
+    for chave in obj["argumentos"]:
+        v = _argumento(chave, ctx, estado, foco, horario)
+        if v is not None:
+            args.append({"chave": chave, "dado": v})
+    return {"codigo": codigo, "nome": obj["nome"], "primeira_vez": True, "insistir": False,
+            "por_tras": obj["por_tras"], "explorar": obj.get("explorar"),
+            "argumentos": args, "desejo": {"caminhos": obj["desejo"], "impacto_relatado": estado.get("impacto")},
+            "orcamento": _orientacao(foco, ctx, estado) if foco and foco["cotado"] else None,
+            "proximo_passo": obj["proximo_passo"], "nunca": obj["nunca"]}
 
 
 # ---------------------------------------------------------------------------
@@ -492,7 +563,7 @@ def decidir(entrada: dict) -> dict:
     if _e_duplicata(entrada):
         estado = deepcopy(entrada["estado"])
         return _finalizar(estado, {"movimento": None, "objetivo": "ignorar_duplicata"}, ctx, entrada,
-                          eventos=[], duplicata=True)
+                          duplicata=True)
 
     estado = deepcopy(entrada.get("estado")) or _estado_inicial()
     agora = _agora(entrada)
@@ -504,121 +575,137 @@ def decidir(entrada: dict) -> dict:
         estado["origem"] = detectar_origem(ctx, entrada.get("primeira_mensagem") or entrada.get("mensagem_texto"),
                                            entrada.get("anuncio"))
 
-    nome = _primeiro_nome(leitura.get("nome_informado"))
-    if nome and not estado["cliente"]["nome"]:
-        estado["cliente"]["nome"] = nome
+    # Nome: o que o cliente disse vence o WhatsApp; WhatsApp so vale se for nome de verdade
+    cliente = estado["cliente"]
+    nome_dito = nome_valido(leitura.get("nome_informado"))
+    nome_recem_informado = bool(nome_dito and cliente.get("nome_fonte") != "cliente")
+    if nome_dito:
+        cliente.update(nome=nome_dito, nome_fonte="cliente")
+    elif not cliente["nome"] and nome_valido(entrada.get("nome_whatsapp")):
+        cliente.update(nome=nome_valido(entrada.get("nome_whatsapp")), nome_fonte="whatsapp")
+    if leitura.get("impacto"):
+        estado["impacto"] = leitura["impacto"]
 
     intencao = leitura.get("intencao") or "outro"
+    objecao_cod = leitura.get("objecao") or OBJECAO_LEGADA.get(intencao)
+    if objecao_cod:
+        intencao = "objecao"
     sentimento = leitura.get("sentimento") or "neutro"
     saudar = not estado["abertura_feita"]
     etapa_antes = estado["etapa"]
-    c: dict = {"saudar": saudar, "acolher": sentimento in SENTIMENTOS_ACOLHER}
+    c: dict = {"saudar": saudar, "periodo": periodo_do_dia(agora) if saudar else None,
+               "acolher": sentimento in SENTIMENTOS_ACOLHER,
+               "usar_nome": cliente["nome"] if (saudar or nome_recem_informado) else None,
+               "nome_recem_informado": nome_recem_informado}
+
+    def fim(**kw):
+        c.update(kw)
+        return _finalizar(estado, c, ctx, entrada, etapa_antes=etapa_antes)
 
     # 1. Fora do contrato da IA: reclamacao, andamento de servico, pessoa humana, compra
     if intencao in INTENCOES_CRITICAS:
-        c.update(movimento="transfer", objetivo="acolher_e_encaminhar", acolher=True,
-                 assunto=intencao, **_transferir(estado, ctx, "humano", intencao))
-        return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+        return fim(movimento="transfer", objetivo="acolher_e_encaminhar", acolher=True, assunto=intencao,
+                   **_transferir(estado, ctx, "humano", intencao))
     if intencao == "pediu_humano":
-        c.update(movimento="transfer", objetivo="encaminhar_atendente", **_transferir(estado, ctx, "humano", "pediu_humano"))
-        return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+        return fim(movimento="transfer", objetivo="encaminhar_atendente",
+                   **_transferir(estado, ctx, "humano", "pediu_humano"))
     if intencao == "comprar_aparelho":
-        c.update(movimento="transfer", objetivo="encaminhar_vendas",
-                 responder=[{"pergunta": "venda_aparelhos", "fato": ctx.get("loja", {}).get("venda_aparelhos"),
-                             "sem_informacao": False}],
-                 **_transferir(estado, ctx, "vendas", "comprar_aparelho"))
-        return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+        return fim(movimento="transfer", objetivo="encaminhar_vendas",
+                   responder=[{"pergunta": "venda_aparelhos", "dado": _fato(ctx, "venda_aparelhos"),
+                               "sem_informacao": False}],
+                   **_transferir(estado, ctx, "vendas", "comprar_aparelho"))
 
-    # 2. Ingerir equipamentos (texto + foto) e resolver entidades
+    # 2. Ingerir equipamentos (texto + foto) e resolver entidades. Nada que o cliente disse se perde.
     ingerir(estado, leitura, entrada.get("foto"), ctx)
+    foco = _selecionar(estado)
+    if foco:
+        estado["foco_atual"] = foco["id"]
+    c["responder"] = _responder(estado, leitura.get("perguntas") or [], ctx, foco) or None
 
-    # 3. Equipamento que a loja nao atende: avisa uma vez
+    # 3. Nome desconhecido: pergunta antes de conduzir (responde a pergunta direta no mesmo turno)
+    if not cliente["nome"] and not cliente["nome_perguntado"]:
+        cliente["nome_perguntado"] = True
+        return fim(movimento="welcome" if saudar else "clarify", objetivo="perguntar_nome",
+                   coletar={"dado": "nome", "re_perguntando": False, "pode_mandar_foto": False, "motivo": None},
+                   equipamento_ja_citado=_resumo_trabalho(foco, ctx) if foco else None)
+
+    # 4. Equipamento que a loja nao atende: avisa uma vez
     fora = [t for t in estado["trabalhos"] if t["status"] == "fora" and t["id"] not in estado["nao_atende_avisado"]]
     if fora:
         estado["nao_atende_avisado"] += [t["id"] for t in fora]
         c["nao_atende"] = {"equipamentos": [(_categoria(ctx, t["categoria"]) or {}).get("nome") for t in fora],
                            "atendemos": [x["nome"] for x in ctx.get("categorias", []) if x["atende"]]}
 
-    foco = _selecionar(estado)
-    if foco:
-        estado["foco_atual"] = foco["id"]
-    perguntas = leitura.get("perguntas") or []
-    c["responder"] = _responder(estado, perguntas, ctx, foco) or None
-
-    # 4. Cliente combinou ir a loja
+    # 5. Cliente combinou ir a loja
     if intencao == "confirmar_visita" or (leitura.get("visita_texto") and any(t["cotado"] for t in estado["trabalhos"])):
-        estado["visita"] = {"quando": leitura.get("visita_texto")}
+        estado["visita"] = {"quando": leitura.get("visita_texto"), "combinada_em": agora.isoformat()}
         for t in estado["trabalhos"]:
             if t["status"] in ("pendente", "cotado"):
                 t["status"] = "encerrado"
-        c.update(movimento="confirm", objetivo="confirmar_visita", usar_nome=estado["cliente"]["nome"],
-                 visita={"quando": leitura.get("visita_texto"), **_dados_visita(estado, ctx, horario)},
-                 **_transferir(estado, ctx, "tecnico", "visita_combinada"))
-        return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+        return fim(movimento="confirm", objetivo="confirmar_visita", usar_nome=cliente["nome"],
+                   visita={"quando": leitura.get("visita_texto"), **_dados_visita(estado, ctx, horario)},
+                   **_transferir(estado, ctx, "tecnico", "visita_combinada"))
 
-    # 5. Despedida: encerra de verdade, sem empurrar visita
+    # 6. Despedida: encerra de verdade, sem empurrar visita
     if intencao == "despedida" or leitura.get("encerrar_conversa"):
         estado["encerrado"] = True
-        c.update(movimento="close", objetivo="despedir", usar_nome=estado["cliente"]["nome"],
-                 porta_aberta=any(t["cotado"] for t in estado["trabalhos"]))
-        return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+        return fim(movimento="close", objetivo="despedir", usar_nome=cliente["nome"],
+                   porta_aberta=any(t["cotado"] for t in estado["trabalhos"]))
 
-    # 6. Objecao de preco depois do orcamento
-    cotados = [t for t in estado["trabalhos"] if t["cotado"] and t["faixa"]]
-    if intencao == "objecao_preco" and cotados:
-        primeira = not estado["objecao_tratada"]
-        estado["objecao_tratada"] = True
-        c.update(movimento="explain", objetivo="tratar_objecao_preco", acolher=True,
-                 objecao={"primeira_vez": primeira, "orcamento": _orientacao(cotados[0], ctx),
-                          "garantia": ctx.get("loja", {}).get("garantia_servico"),
-                          "insistir": False})
-        return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+    # 7. Objecao: dado + orientacao da biblioteca; segunda vez nao insiste
+    if intencao == "objecao":
+        obj = tratar_objecao(estado, objecao_cod, ctx, horario)
+        if obj:
+            convidar = obj["proximo_passo"] == "convidar_avaliacao" and not estado["convite_visita_feito"]
+            if convidar:
+                estado["convite_visita_feito"] = True
+            return fim(movimento="explain", objetivo="tratar_objecao", acolher=True, objecao=obj,
+                       convidar_visita=convidar, visita=_dados_visita(estado, ctx, horario) if convidar else None,
+                       oferecer_compra={"venda_aparelhos": _fato(ctx, "venda_aparelhos"),
+                                        "sem_consulta_spc": _fato(ctx, "venda_sem_consulta_spc")}
+                       if obj["proximo_passo"] == "oferecer_compra" else None)
 
-    # 7. Conduzir o equipamento em foco: uma lacuna por turno
+    # 8. Conduzir o equipamento em foco: uma lacuna por turno
     if foco is None:
         if any(t["cotado"] for t in estado["trabalhos"]):
-            c.update(movimento="answer" if c["responder"] else "recommend_next",
-                     objetivo="aguardar_decisao", convidar_visita=False)
-        else:
-            c.update(movimento="welcome" if saudar else "clarify", objetivo="descobrir_equipamento",
-                     coletar=_coletar(None, "equipamento", ctx))
-        return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+            return fim(movimento="answer" if c["responder"] else "recommend_next", objetivo="aguardar_decisao",
+                       convidar_visita=False)
+        return fim(movimento="welcome" if saudar else "clarify", objetivo="descobrir_equipamento",
+                   coletar=_coletar(None, "equipamento", ctx))
 
     lacuna = _lacuna(foco, ctx)
     if lacuna != "pronto":
-        c.update(movimento="welcome" if saudar and estado["turnos"] == 1 and not foco["defeito"] else "clarify",
-                 objetivo=f"perguntar_{lacuna}", coletar=_coletar(foco, lacuna, ctx),
-                 equipamento_em_foco=_resumo_trabalho(foco, ctx))
-        if c["coletar"]["dado"] == "modelo" and leitura.get("perguntas") and "preco" in leitura["perguntas"]:
-            c["por_que_preciso"] = "o valor muda conforme o modelo"
-        return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+        motivo = "preco_depende_do_modelo" if lacuna == "modelo" else None
+        return fim(movimento="welcome" if saudar and not foco["defeito"] else "clarify",
+                   objetivo=f"perguntar_{lacuna}", coletar=_coletar(foco, lacuna, ctx, motivo),
+                   equipamento_em_foco=_resumo_trabalho(foco, ctx))
 
-    orientacao = _orientacao(foco, ctx)
+    orientacao = _orientacao(foco, ctx, estado)
     foco["cotado"], foco["status"] = True, "cotado"
     proximo = _selecionar(estado)
-    c.update(movimento="recommend_next", objetivo=orientacao["tipo"], orientacao=orientacao,
-             convidar_visita=not estado["convite_visita_feito"] and proximo is None)
-    if c["convidar_visita"]:
+    convidar = not estado["convite_visita_feito"] and proximo is None
+    if convidar:
         estado["convite_visita_feito"] = True
-        c["visita"] = _dados_visita(estado, ctx, horario)
     if proximo is not None:
         estado["foco_atual"] = proximo["id"]
-        c["proximo_equipamento"] = _resumo_trabalho(proximo, ctx)
-    return _finalizar(estado, c, ctx, entrada, eventos=[], etapa_antes=etapa_antes)
+    return fim(movimento="recommend_next", objetivo=orientacao["tipo"], orientacao=orientacao,
+               convidar_visita=convidar, visita=_dados_visita(estado, ctx, horario) if convidar else None,
+               proximo_equipamento=_resumo_trabalho(proximo, ctx) if proximo else None)
 
 
 def _resumo_trabalho(t: dict, ctx: dict) -> dict:
     s = _servico(ctx, t["servico_id"])
     return {"equipamento": (_categoria(ctx, t["categoria"]) or {}).get("nome"), "modelo": t["modelo"],
             "defeito": t["defeito"], "servico": s["nome"] if s else None,
-            "faixa": f"entre {_brl(t['faixa']['min'])} e {_brl(t['faixa']['max'])}" if t["faixa"] else None}
+            "faixa": {"min": t["faixa"]["min"], "max": t["faixa"]["max"]} if t["faixa"] else None}
 
 
 # ---------------------------------------------------------------------------
 # Saida unica: conducao completa + estado + metricas
 # ---------------------------------------------------------------------------
-def _finalizar(estado: dict, c: dict, ctx: dict, entrada: dict, eventos: list, duplicata: bool = False,
+def _finalizar(estado: dict, c: dict, ctx: dict, entrada: dict, duplicata: bool = False,
                etapa_antes: str | None = None) -> dict:
+    eventos: list[str] = []
     if not duplicata:
         estado["_ultima_mensagem_texto"] = entrada.get("mensagem_texto")
         estado["_ultima_mensagem_data"] = entrada.get("mensagem_data")
@@ -629,37 +716,37 @@ def _finalizar(estado: dict, c: dict, ctx: dict, entrada: dict, eventos: list, d
         if _rank(etapa) > _rank(estado["etapa_max"]):
             estado["etapa_max"] = etapa
         if etapa_antes is not None and _rank(etapa) > _rank(etapa_antes):
-            eventos = [e for e in ETAPAS[_rank(etapa_antes) + 1:_rank(etapa) + 1]]
+            eventos = ETAPAS[_rank(etapa_antes) + 1:_rank(etapa) + 1]
 
-    for k, v in {"movimento": None, "objetivo": None, "saudar": False, "acolher": False, "usar_nome": None,
-                 "responder": None, "coletar": None, "orientacao": None, "visita": None, "nao_atende": None,
-                 "deve_transferir": False, "fila": None, "transferir_para": None,
-                 "motivo_transferencia": None}.items():
+    for k, v in {"movimento": None, "objetivo": None, "saudar": False, "periodo": None, "acolher": False,
+                 "usar_nome": None, "responder": None, "coletar": None, "orientacao": None, "objecao": None,
+                 "convidar_visita": False, "visita": None, "nao_atende": None, "deve_transferir": False,
+                 "fila": None, "transferir_para": None, "motivo_transferencia": None}.items():
         c.setdefault(k, v)
-    c["apresentar_ia"] = ctx.get("loja", {}).get("nome_ia") if c["saudar"] else None
+    c["apresentar_ia"] = (ctx.get("loja") or {}).get("nome_ia") if c["saudar"] else None
     c["nao_afirmar"] = list(ctx.get("loja_a_confirmar") or [])
     c["duplicata"] = duplicata
     c["etapa"] = estado["etapa"]
     if c["deve_transferir"]:
         c["resumo_encaminhamento"] = {
-            "cliente": estado["cliente"]["nome"], "origem": estado.get("origem"),
+            "cliente": estado["cliente"]["nome"], "origem": estado.get("origem"), "impacto": estado.get("impacto"),
             "equipamentos": [_resumo_trabalho(t, ctx) for t in estado["trabalhos"] if t["status"] != "fora"],
             "visita": estado.get("visita"), "motivo": c["motivo_transferencia"],
         }
-    return {"estado_novo": estado, "conducao": c, "metricas": _metricas(estado, c, ctx, entrada, eventos, duplicata)}
+    return {"estado_novo": estado, "conducao": c,
+            "metricas": _metricas(estado, c, entrada, eventos, duplicata)}
 
 
-def _metricas(estado: dict, c: dict, ctx: dict, entrada: dict, eventos: list, duplicata: bool) -> dict:
-    """Tudo o que o registrar_turno (SQL) grava. O SQL nao decide nada: so escreve isto."""
+def _metricas(estado: dict, c: dict, entrada: dict, eventos: list, duplicata: bool) -> dict:
+    """Tudo o que o v1_registrar_turno (SQL) grava. O SQL nao decide nada: so escreve isto."""
     leitura = entrada.get("leitura") or {}
     ativos = [t for t in estado["trabalhos"] if t["status"] != "fora"]
     principal = next((t for t in ativos if t["id"] == estado.get("foco_atual")), None) or (ativos[0] if ativos else None)
     origem = estado.get("origem") or {}
+    objecao = (c.get("objecao") or {}).get("codigo")
     return {
-        "ticket_id": entrada.get("ticket_id"),
-        "duplicata": duplicata,
-        "primeiro_turno": estado["turnos"] == 1,
-        "primeira_msg_em": estado.get("primeira_msg_em"),
+        "ticket_id": entrada.get("ticket_id"), "duplicata": duplicata,
+        "primeiro_turno": estado["turnos"] == 1, "primeira_msg_em": estado.get("primeira_msg_em"),
         "canal": origem.get("canal"), "campanha": origem.get("campanha"),
         "fora_horario": estado.get("fora_horario_inicio"),
         "etapa": estado["etapa"], "etapa_max": estado["etapa_max"], "eventos_funil": eventos,
@@ -678,8 +765,9 @@ def _metricas(estado: dict, c: dict, ctx: dict, entrada: dict, eventos: list, du
         "transferido": bool(c.get("deve_transferir")),
         "fila": c.get("fila"), "motivo_transferencia": c.get("motivo_transferencia"),
         "intencao": leitura.get("intencao"), "sentimento": leitura.get("sentimento"),
+        "objecao": objecao,
         "pediu_preco": "preco" in (leitura.get("perguntas") or []),
-        "objecao_preco": leitura.get("intencao") == "objecao_preco",
+        "objecao_preco": objecao in ("preco_alto", "comparou_concorrente"),
         "pediu_humano": leitura.get("intencao") == "pediu_humano",
         "reclamacao": leitura.get("intencao") in INTENCOES_CRITICAS,
         "foto": bool(entrada.get("foto")),
@@ -694,20 +782,36 @@ def _metricas(estado: dict, c: dict, ctx: dict, entrada: dict, eventos: list, du
 def decidir_followup(entrada: dict) -> dict:
     """
     Entrada: {estado, contexto_dados, agora, ultima_msg_cliente_em, followups_enviados}
-    Janela do WhatsApp: mensagem livre so ate 24h da ultima mensagem do cliente.
-      - 20h a 23h sem resposta, lead ativo -> lembrete (texto livre, narrador escreve)
-      - 72h ou mais -> reengajar (exige template aprovado na Meta)
-    No maximo 2 follow-ups por atendimento. Nunca fora do horario comercial.
+    - lembrete_visita: visita combinada ha 12h+ e ainda nao lembrada (confirmacao automatica, 1x).
+    - lembrete: lead ativo 20h a 23h sem resposta (dentro da janela de 24h do WhatsApp).
+    - reengajar_template: 72h+ sem resposta (exige template aprovado na Meta).
+    Nunca fora do horario comercial. No maximo 2 follow-ups de reengajamento por atendimento.
     """
     estado = entrada.get("estado") or {}
     ctx = entrada.get("contexto_dados") or {}
     agora = _agora(entrada)
+    if not situacao_horario(ctx, agora)["aberto"]:
+        return {"enviar": False, "motivo": "fora_do_horario"}
+    cliente = (estado.get("cliente") or {}).get("nome")
+    visita = estado.get("visita")
+    if visita and not estado.get("lembrete_visita_enviado"):
+        try:
+            combinada = datetime.fromisoformat(visita["combinada_em"]).astimezone(TZ)
+        except (KeyError, TypeError, ValueError):
+            return {"enviar": False, "motivo": "visita_sem_data"}
+        if (agora - combinada).total_seconds() / 3600 < 12:
+            return {"enviar": False, "motivo": "visita_recente"}
+        estado_novo = deepcopy(estado)
+        estado_novo["lembrete_visita_enviado"] = True
+        return {"enviar": True, "tipo": "lembrete_visita", "estado_novo": estado_novo,
+                "conducao": {"movimento": "confirm", "objetivo": "lembrar_visita", "usar_nome": cliente,
+                             "visita": {"quando": visita.get("quando"),
+                                        "loja_aberta_agora": True, "horario": _horario_loja(ctx)},
+                             "insistir": False}}
     if estado.get("encerrado") or estado.get("transferido") or estado.get("etapa") not in ("triagem", "diagnostico", "orcamento"):
         return {"enviar": False, "motivo": "lead_fora_de_followup"}
     if (entrada.get("followups_enviados") or 0) >= 2:
         return {"enviar": False, "motivo": "limite_atingido"}
-    if not situacao_horario(ctx, agora)["aberto"]:
-        return {"enviar": False, "motivo": "fora_do_horario"}
     try:
         ultima = datetime.fromisoformat(entrada["ultima_msg_cliente_em"]).astimezone(TZ)
     except (KeyError, TypeError, ValueError):
@@ -721,9 +825,9 @@ def decidir_followup(entrada: dict) -> dict:
         return {"enviar": False, "motivo": "fora_da_janela"}
     foco = next((t for t in estado.get("trabalhos", []) if t["status"] in ("pendente", "cotado")), None)
     return {"enviar": True, "tipo": tipo,
-            "conducao": {"movimento": "recover", "objetivo": "retomar_atendimento",
-                         "usar_nome": (estado.get("cliente") or {}).get("nome"),
+            "conducao": {"movimento": "recover", "objetivo": "retomar_atendimento", "usar_nome": cliente,
                          "equipamento_em_foco": _resumo_trabalho(foco, ctx) if foco else None,
+                         "impacto_relatado": estado.get("impacto"),
                          "etapa": estado.get("etapa"), "insistir": False}}
 
 

@@ -216,7 +216,8 @@ def resolver_modelo(ctx: dict, texto: str | None, categoria: str | None) -> dict
         if g:
             grupo = (g.group(1) if g.groups() and g.group(1) else "").upper()
             return {"categoria": m["categoria"], "marca": m["marca"],
-                    "modelo": m["exibicao"].replace("\\1", grupo).strip(), "linha": m["linha"]}
+                    "modelo": m["exibicao"].replace("\\1", grupo).strip(), "linha": m["linha"],
+                    "so_marca": bool(m.get("so_marca"))}
     return None
 
 
@@ -346,7 +347,10 @@ def ingerir(estado: dict, leitura: dict, foto: dict | None, ctx: dict) -> list[d
         if cat and not t["categoria"]:
             t["categoria"] = cat
             t["id"] = f"{cat}:{t['id'].split(':')[-1]}"
-        if res and res["categoria"] == t["categoria"]:
+        if res and res["categoria"] == t["categoria"] and res["so_marca"]:
+            # so a marca (ex.: "Samsung"): o preco muda muito dentro dela, entao o modelo segue em aberto
+            t["marca"] = res["marca"]
+        elif res and res["categoria"] == t["categoria"]:
             t.update(marca=res["marca"], modelo=res["modelo"], linha=res["linha"], modelo_status="resolvido")
         elif eq.get("marca") or eq.get("modelo"):
             t["marca"] = t["marca"] or eq.get("marca")

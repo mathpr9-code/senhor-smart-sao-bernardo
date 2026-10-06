@@ -454,3 +454,28 @@ def test_estado_guarda_a_ultima_pergunta_para_o_extrator():
     assert t1["estado_novo"]["ultima_pergunta"] == "nome"
     t2 = turno({"intencao": "informar", "nome_informado": "Michele"}, t1["estado_novo"], nome_whatsapp="🔥")
     assert t2["estado_novo"]["ultima_pergunta"] == (t2["conducao"]["coletar"] or {}).get("dado")
+
+
+def test_so_a_marca_nao_fecha_o_modelo_nem_o_preco():
+    # caso real do teste no n8n: "meu Cel Samsung, caiu e a tela não acende" cotava R$ 650 sem saber o modelo
+    t1 = turno({"intencao": "pedir_orcamento", "perguntas": ["preco"],
+                "equipamentos": [eq(categoria="celular", marca="Samsung", defeito="caiu e a tela não acende mais",
+                                    servico_sugerido="cel_tela")]})
+    c, trab = t1["conducao"], t1["estado_novo"]["trabalhos"][0]
+    assert c["objetivo"] == "perguntar_modelo" and c["coletar"]["motivo"] == "preco_depende_do_modelo"
+    assert trab["marca"] == "Samsung" and trab["linha"] is None and trab["preco"] is None
+    assert trab["modelo_status"] == "insuficiente"
+    t2 = turno({"intencao": "informar", "equipamentos": [eq(categoria="celular", modelo="A52s")]}, t1["estado_novo"])
+    assert t2["conducao"]["objetivo"] == "orcamento" and t2["conducao"]["orientacao"]["preco"] == 650
+
+
+def test_marca_sem_modelo_depois_de_duas_perguntas_vai_para_avaliacao():
+    lt = {"intencao": "pedir_orcamento",
+          "equipamentos": [eq(categoria="celular", marca="Motorola", defeito="tela trincada")]}
+    t1 = turno(lt)
+    t2 = turno({"intencao": "informar", "equipamentos": []}, t1["estado_novo"])
+    t3 = turno({"intencao": "informar", "equipamentos": []}, t2["estado_novo"])
+    assert [x["conducao"]["objetivo"] for x in (t1, t2, t3)] == ["perguntar_modelo", "perguntar_modelo", "avaliacao"]
+    assert t2["conducao"]["coletar"]["re_perguntando"] is True
+    assert t3["conducao"]["orientacao"]["tipo"] == "avaliacao" and t3["conducao"]["orientacao"].get("preco") is None
+    assert all("R$" not in json.dumps(x["conducao"], ensure_ascii=False) for x in (t1, t2, t3))

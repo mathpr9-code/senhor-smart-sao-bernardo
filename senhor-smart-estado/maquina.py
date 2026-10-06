@@ -35,7 +35,7 @@ from copy import deepcopy
 from datetime import date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-VERSAO = "1.2.0"
+VERSAO = "1.2.1"
 TZ = ZoneInfo("America/Sao_Paulo")
 
 ETAPAS = ["novo", "triagem", "diagnostico", "orcamento", "agendado"]

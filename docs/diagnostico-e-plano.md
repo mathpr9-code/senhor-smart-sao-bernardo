@@ -19,7 +19,9 @@ A nossa IA rodava sem que ele visse o resultado.
 Pontos de atenção na comparação:
 - "Fechamentos 221" da TX são cards movidos no Kanban pela equipe, não venda medida pela IA.
 - A TX cobre assistência técnica (orçamento de tela, OS). Nosso fluxo era só venda de aparelho no boleto.
-  Precisamos confirmar com o cliente se a assistência entra no escopo.
+
+**Decisões (06/10/2026):** a IA pode passar faixa de preço; o escopo inclui assistência técnica
+(o fluxo novo precisa de uma trilha de orçamento de reparo com leitura da foto do aparelho).
 
 ## 2. O que os nossos dados mostram (e o cliente nunca viu)
 
@@ -43,7 +45,7 @@ Painel com esses dados: `dashboard/index.html`.
    a IA insistiu em "como você usa o celular?" até ouvir "não está me ajudando". Ticket 67568313
    perguntou "onde está localizado?" e recebeu "como você se chama?".
    *Correção:* regra "responde primeiro, conduz depois". Se a pergunta é direta (endereço, preço, forma
-   de pagamento), responde e só então faz um micro-passo. Definir com o dono se pode passar faixa de preço.
+   de pagamento), responde e só então faz um micro-passo. Decidido: pode passar faixa de preço.
 2. **Usa o nome do WhatsApp apesar da regra** ("Boa noite, Ls!"). *Correção:* checagem no Pós-processador.
 3. **Leitura de contexto fraca.** "Bom diaaaa" virou "Que bom que está animado para trocar de celular!".
    Modelo atual: gpt-4.1-mini, temperatura 0.3. *Correção:* migrar o agente para modelo melhor no

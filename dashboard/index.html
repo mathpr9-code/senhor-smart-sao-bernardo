@@ -88,6 +88,17 @@ table.mini td.r, table.mini th.r { text-align: right; }
 footer { color: var(--ink-3); font-size: 12.5px; }
 @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid2, .insights { grid-template-columns: 1fr; } }
 @media (max-width: 420px) { .kpi .val { font-size: 28px; } }
+@media print {
+  @page { size: A4 landscape; margin: 10mm; }
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .wrap { padding-block: 0; gap: 14px; }
+  .card, .kpi, .grid2 { break-inside: avoid; }
+  .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pb { break-before: page; }
+  .heat-wrap { overflow: visible; }
+  .tip { display: none !important; }
+}
 </style>
 
 <div class="wrap">
@@ -121,7 +132,7 @@ footer { color: var(--ink-3); font-size: 12.5px; }
     <p class="flag">Entre 18/06 e 02/07 o registro de estágio ficou fora do ar: as visitas desse período existem, mas não foram gravadas.</p>
   </section>
 
-  <section class="grid2">
+  <section class="grid2 pb">
     <div class="card" aria-labelledby="t-fun">
       <h2 id="t-fun">Funil do atendimento</h2>
       <p class="desc">Até onde cada lead chegou na conversa com a IA.</p>
@@ -148,7 +159,7 @@ footer { color: var(--ink-3); font-size: 12.5px; }
     <div class="heat-wrap"><svg id="heat" class="chart" viewBox="0 0 1000 250" role="img" aria-label="Mapa de calor de leads por dia e hora" style="min-width:640px"></svg></div>
   </section>
 
-  <section class="grid2">
+  <section class="grid2 pb">
     <div class="card" aria-labelledby="t-mod">
       <h2 id="t-mod">Aparelhos mais procurados</h2>
       <p class="desc">Modelo em que o lead demonstrou interesse durante a conversa.</p>

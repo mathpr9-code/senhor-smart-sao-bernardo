@@ -32,11 +32,11 @@ const linhas = [
   `🌙 ${fmt(r.fora_do_horario)} chegaram com a loja fechada e foram atendidas`,
   `💬 ${fmt(r.orcamentos)} receberam orçamento ou orientação`,
   `📍 ${fmt(r.agendados)} combinaram de ir à loja (${pct(r.agendados, r.leads)} das conversas)`,
-  r.visitas_combinadas_para_amanha ? `🗓️ ${fmt(r.visitas_combinadas_para_amanha)} disseram que vão amanhã` : null,
-  r.fechados_hoje ? `✅ ${fmt(r.fechados_hoje)} serviços fechados hoje · ${brl(r.receita_hoje)}` : null,
+  r.visitas_combinadas_para_amanha ? `🗓️ ${fmt(r.visitas_combinadas_para_amanha)} ${r.visitas_combinadas_para_amanha === 1 ? 'disse que vai' : 'disseram que vão'} amanhã` : null,
+  r.fechados_hoje ? `✅ ${fmt(r.fechados_hoje)} ${r.fechados_hoje === 1 ? 'serviço fechado' : 'serviços fechados'} hoje · ${brl(r.receita_hoje)}` : null,
   `⏱️ Primeira resposta em ${tempo}`,
   servicos ? `\nMais procurados: ${servicos}` : null,
-  r.parados_com_orcamento ? `\n⚠️ ${fmt(r.parados_com_orcamento)} clientes receberam orçamento e ainda não responderam.` : null,
+  r.parados_com_orcamento ? `\n⚠️ ${fmt(r.parados_com_orcamento)} ${r.parados_com_orcamento === 1 ? 'cliente recebeu orçamento e ainda não respondeu' : 'clientes receberam orçamento e ainda não responderam'}.` : null,
   comparacao || null,
 ].filter((l) => l !== null);
 

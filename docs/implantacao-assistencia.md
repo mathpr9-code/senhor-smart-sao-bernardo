@@ -106,6 +106,24 @@ Mensagem → Carregar Estado + Catálogo → Extrair Intenção → Carregar Con
 - Transferência e nota interna usam `conducao.transferir_para` (64000523 na base de teste). A nota sai de
   `conducao.resumo_encaminhamento`, sem IA.
 - Rollback: restaurar a versão `339bd8c3-1b5e-4ddb-a605-2bc77aa5bdbc` no histórico do fluxo.
+- O começo do fluxo também foi atualizado: saiu o caminho de documento do bot de vendas (RG/CNH → Storage) e a foto
+  passa por **Ler Foto** (`prompts/visao.md`, GPT-5.4-mini, JSON estrito) → **Interpretar Foto**. As notas de cada zona
+  seguem o padrão Lívia/Nexfar e saem de `n8n/atendimento/notas/*.md`.
+- Cuidado ao gerar expressão: `}}` dentro de `={{ … }}` fecha a expressão e o n8n acusa "invalid syntax".
+  O `build_ops.py` separa as chaves do schema e barra qualquer expressão com `{{`/`}}` no meio.
+
+### Fluxo de teste: "TESTE Senhor Smart - Sofia (sem envio)" (y2nXDUShrwLeZ8YJ)
+
+Mesmo núcleo do fluxo real, gerado por `n8n/atendimento/build_teste.py`, **sem buffer, sem envio e sem transferência**
+(tickets forjados dão 403 na DeskRio). O webhook responde com bolhas, transferir, fila, nota interna, leitura do
+extrator, conducao, etapa e eventos do funil. Use **ticketId negativo** (painel e resumo do dia ignoram ticket ≤ 0) e
+mude `lastMessageDate` a cada turno.
+
+```json
+POST /webhook-test/teste-senhor-smart
+{ "ticketId": -5001, "lastMessage": "meu A52s caiu e a tela não acende", "lastMessageDate": "1001",
+  "contact": { "name": "😎", "number": "5511900000000" } }
+```
 
 Payload do node **Máquina de Estado** (o mesmo de `n8n/atendimento/expr_maquina.js`):
 
@@ -155,6 +173,6 @@ Payload do **Registrar Turno**: `{ metricas: <saída da máquina>.metricas, tele
 - Um trabalho por tipo de aparelho na conversa: dois celulares diferentes do mesmo cliente viram um só (o segundo exige humano).
 - Um serviço por aparelho: "tela trincada e não carrega" cota a tela; o conector aparece na avaliação.
 - O narrador não foi rodado contra o modelo real nesta sessão (sem chave do OpenRouter aqui). Os exemplos do prompt usam conducao real da máquina; a bateria E2E é no fluxo de teste.
-- Foto: o nó de visão antigo (antes do buffer) só devolve `tipo` e `descricao`; a descrição entra no texto e o extrator lê.
-  `foto` vai `null` para a máquina até o nó de visão usar `prompts/visao.md` (categoria, marca, modelo, danos).
+- Foto: os campos estruturados (categoria, marca, modelo, danos) só chegam à máquina quando a execução vencedora do
+  buffer é a da própria foto; nas outras, a foto entra como texto [FOTO_DO_CLIENTE: …] e o extrator lê.
 - Tokens e custo no `turno_log` são só do extrator; o AI Agent do n8n não expõe o uso do narrador.

@@ -2,7 +2,7 @@ JSON.stringify({
   ticket_id: Number($('Webhook').first().json.body.ticketId),
   estado: $('Carregar Estado + Catálogo').first().json.estado || null,
   leitura: (() => { try { return JSON.parse($('Extrair Intenção').first().json.choices[0].message.content); } catch (e) { return { intencao: 'outro', equipamentos: [], perguntas: [] }; } })(),
-  foto: null,
+  foto: (() => { if (!$('Interpretar Foto').isExecuted) return null; const f = $('Interpretar Foto').first().json; return f.tipo === 'aparelho' ? { tipo: f.tipo, categoria: f.categoria, marca: f.marca, modelo: f.modelo, danos: f.danos, descricao: f.descricao, confianca: f.confianca } : null; })(),
   contexto_dados: $('Carregar Contexto').first().json.contexto,
   agora: $now.setZone('America/Sao_Paulo').toISO(),
   nome_whatsapp: $('Webhook').first().json.body.contact?.name || null,

@@ -36,7 +36,7 @@ return [{
         saida,
         latencia_ms,
         modelo_ia: 'extrator gpt-5.4-mini + narrador gpt-4.1-mini',
-        tokens: usage.total_tokens ?? null,   // só o extrator; o AI Agent não expõe o uso
+        tokens: usage.total_tokens ?? null,   // só extrator; o nó da Sofia não expõe o uso
         custo_usd: usage.cost ?? null,
       },
     },

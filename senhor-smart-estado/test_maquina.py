@@ -343,6 +343,14 @@ def test_endpoints_http():
     assert r.status_code == 200 and set(r.json()) == {"estado_novo", "conducao", "metricas"}
 
 
+def test_http_repassa_nome_do_whatsapp():
+    cli = TestClient(app)
+    r = cli.post("/processar", json={"ticket_id": 7, "leitura": {"intencao": "saudacao"}, "contexto_dados": CTX,
+                                     "agora": TERCA_10H, "nome_whatsapp": "Michele Souza"}).json()
+    assert r["conducao"]["objetivo"] != "perguntar_nome"
+    assert r["estado_novo"]["cliente"]["nome"] == "Michele"
+
+
 # --- v1.1: nome, objecoes, so dado ---------------------------------------------
 
 @pytest.mark.parametrize("nome", ["😎", "5511999990000", "~", ".", "Cliente", None])
@@ -439,3 +447,10 @@ def test_lembrete_de_visita_no_dia_seguinte():
 def test_servico_mais_barato_que_a_entrada_nao_leva_condicao_de_parcelamento():
     c = turno({"intencao": "pedir_orcamento", "equipamentos": [eq(categoria="celular", defeito="esta muito lento, travando")]})["conducao"]
     assert c["orientacao"]["preco"] == 120 and c["orientacao"]["condicao_pagamento"] is None
+
+
+def test_estado_guarda_a_ultima_pergunta_para_o_extrator():
+    t1 = turno({"intencao": "saudacao"}, nome_whatsapp="🔥")
+    assert t1["estado_novo"]["ultima_pergunta"] == "nome"
+    t2 = turno({"intencao": "informar", "nome_informado": "Michele"}, t1["estado_novo"], nome_whatsapp="🔥")
+    assert t2["estado_novo"]["ultima_pergunta"] == (t2["conducao"]["coletar"] or {}).get("dado")

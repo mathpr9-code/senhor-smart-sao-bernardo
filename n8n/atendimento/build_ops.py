@@ -1,0 +1,120 @@
+"""Gera as operações do update_workflow do n8n a partir dos arquivos versionados (prompts + scripts)."""
+import json, re, sys
+from pathlib import Path
+
+AQUI = Path(__file__).parent
+RAIZ = AQUI.parent.parent
+
+def bloco(md: str, abertura: str) -> str:
+    texto = (RAIZ / "prompts" / md).read_text()
+    ini = texto.index(abertura) + len(abertura)
+    return texto[ini:texto.index("\n```", ini)].strip("\n")
+
+sys_extrator = bloco("extrator.md", "## System prompt\n\n```\n")
+sys_extrator = sys_extrator[:sys_extrator.index("<catalogo>")].rstrip()
+sys_sofia = bloco("narrador.md", "## System prompt\n\n```markdown\n")
+schema = json.loads((RAIZ / "prompts" / "extrator.schema.json").read_text())
+schema.pop("_nota", None)
+
+expr_ext = (AQUI / "expr_extrator.js").read_text().strip()
+expr_ext = expr_ext.replace("__SCHEMA__", json.dumps(schema, ensure_ascii=False)).replace(
+    "__SYSTEM__", json.dumps(sys_extrator, ensure_ascii=False))
+expr = lambda f: "={{ " + (AQUI / f).read_text().strip() + " }}"
+code = lambda f: (AQUI / f).read_text()
+
+MAQUINA_URL = "https://senhor-smart-estado.mpstudio.ia.br/processar"
+PG = {"postgres": {"id": "O9soLH536pVD9my1", "name": "Postgres account"}}
+
+def cond(left, op):
+    return {"conditions": {"options": {"caseSensitive": True, "leftValue": "", "typeValidation": "loose", "version": 3},
+            "conditions": [{"id": "c-" + op, "leftValue": left, "rightValue": "",
+                            "operator": {"type": "boolean", "operation": op, "singleValue": True}}],
+            "combinator": "and"}, "looseTypeValidation": True, "options": {}}
+
+lote1 = [
+    # --- leitura -----------------------------------------------------------------
+    {"type": "renameNode", "oldName": "Carregar Estado", "newName": "Carregar Estado + Catálogo"},
+    {"type": "updateNodeParameters", "nodeName": "Carregar Estado + Catálogo", "replace": True, "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT senhor_smart_at.v1_carregar_estado($1::bigint) AS estado, senhor_smart_at.v1_catalogo_extrator() AS catalogo;",
+        "options": {"queryReplacement": "={{ $('Webhook').first().json.body.ticketId }}"}}},
+    {"type": "renameNode", "oldName": "Extrair Intencao com Contexto", "newName": "Extrair Intenção"},
+    {"type": "setNodeParameter", "nodeName": "Extrair Intenção", "path": "/jsonBody", "value": "={{ " + expr_ext + " }}"},
+    {"type": "setNodeSettings", "nodeName": "Extrair Intenção",
+     "settings": {"retryOnFail": True, "maxTries": 2, "waitBetweenTries": 1000, "onError": "continueRegularOutput"}},
+    {"type": "renameNode", "oldName": "Montar contexto", "newName": "Carregar Contexto"},
+    {"type": "updateNodeParameters", "nodeName": "Carregar Contexto", "replace": True, "parameters": {
+        "operation": "executeQuery", "query": "SELECT senhor_smart_at.v1_carregar_contexto(now()) AS contexto;", "options": {}}},
+    # --- máquina -----------------------------------------------------------------
+    {"type": "addNode", "node": {"name": "Máquina de Estado", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.4,
+        "position": [5200, 860], "parameters": {
+            "method": "POST", "url": MAQUINA_URL, "sendBody": True, "specifyBody": "json",
+            "jsonBody": expr("expr_maquina.js"), "options": {"timeout": 10000}}}},
+    {"type": "setNodeSettings", "nodeName": "Máquina de Estado",
+     "settings": {"retryOnFail": True, "maxTries": 2, "waitBetweenTries": 1000, "onError": "continueErrorOutput"}},
+    {"type": "removeConnection", "source": "Carregar Contexto", "target": "Dedup OK?"},
+    {"type": "addConnection", "source": "Carregar Contexto", "target": "Máquina de Estado"},
+    {"type": "addConnection", "source": "Máquina de Estado", "target": "Dedup OK?"},
+    {"type": "addConnection", "source": "Máquina de Estado", "sourceIndex": 1, "target": "Liberar próxima mensagem do cliente"},
+    {"type": "updateNodeParameters", "nodeName": "Dedup OK?", "replace": True,
+     "parameters": cond("={{ $('Máquina de Estado').first().json.conducao.duplicata }}", "false")},
+]
+
+lote2 = [
+    # --- narrador ----------------------------------------------------------------
+    {"type": "renameNode", "oldName": "AI Agent", "newName": "Sofia"},
+    {"type": "updateNodeParameters", "nodeName": "Sofia", "replace": True, "parameters": {
+        "promptType": "define", "text": expr("expr_sofia.js"), "options": {}}},
+    {"type": "renameNode", "oldName": "OpenRouter Chat Model", "newName": "GPT 4.1 mini"},
+    {"type": "updateNodeParameters", "nodeName": "GPT 4.1 mini", "replace": True, "parameters": {
+        "model": "openai/gpt-4.1-mini",
+        "options": {"temperature": 0.4, "maxTokens": 350, "frequencyPenalty": 0.2}}},
+    {"type": "removeNode", "nodeName": "Simple Memory"},
+    {"type": "addNode", "node": {"name": "Memória Sofia", "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+        "typeVersion": 1.4, "position": [6160, 848], "credentials": PG, "parameters": {
+            "sessionIdType": "customKey", "sessionKey": "={{ String($('Webhook').first().json.body.ticketId) }}",
+            "tableName": "senhor_smart_at.sofia_memoria", "contextWindowLength": 12}}},
+    {"type": "addConnection", "source": "Memória Sofia", "target": "Sofia", "connectionType": "ai_memory"},
+    # --- logs: turno + métricas numa chamada só ------------------------------------
+    {"type": "renameNode", "oldName": "Classificar interação", "newName": "Montar Log do Turno"},
+    {"type": "updateNodeParameters", "nodeName": "Montar Log do Turno", "replace": True,
+     "parameters": {"jsCode": code("montar_log_turno.js")}},
+    {"type": "renameNode", "oldName": "Logar no Supabase", "newName": "Registrar Turno e Métricas"},
+    {"type": "updateNodeParameters", "nodeName": "Registrar Turno e Métricas", "replace": True, "parameters": {
+        "operation": "executeQuery", "query": "SELECT senhor_smart_at.v1_registrar_turno($1::jsonb);",
+        "options": {"queryReplacement": "={{ JSON.stringify($('Montar Log do Turno').first().json.payload) }}"}}},
+    {"type": "setNodeSettings", "nodeName": "Registrar Turno e Métricas",
+     "settings": {"executeOnce": True, "retryOnFail": True, "onError": "continueRegularOutput"}},
+    {"type": "removeNode", "nodeName": "Upsert atendimento_log"},
+    {"type": "addConnection", "source": "Registrar Turno e Métricas", "target": "Pós-processador"},
+    {"type": "updateNodeParameters", "nodeName": "Pós-processador", "replace": True,
+     "parameters": {"jsCode": code("pos_processador.js")}},
+    # --- estado antes de soltar o lock ----------------------------------------------
+    {"type": "removeConnection", "source": "Loop Mensagens", "target": "Liberar Lock"},
+    {"type": "removeConnection", "source": "Liberar Lock", "target": "Atualizar Estado"},
+    {"type": "removeConnection", "source": "Atualizar Estado", "target": "If"},
+    {"type": "addConnection", "source": "Loop Mensagens", "target": "Atualizar Estado"},
+    {"type": "addConnection", "source": "Atualizar Estado", "target": "Liberar Lock"},
+    {"type": "addConnection", "source": "Liberar Lock", "target": "If"},
+    {"type": "updateNodeParameters", "nodeName": "Atualizar Estado", "replace": True, "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT senhor_smart_at.v1_atualizar_estado(($1::jsonb->>'ticket_id')::bigint, $1::jsonb->'estado', ($1::jsonb->>'agora')::timestamptz);",
+        "options": {"queryReplacement": "={{ JSON.stringify({ ticket_id: String($('Webhook').first().json.body.ticketId), estado: $('Máquina de Estado').first().json.estado_novo, agora: $now.setZone('America/Sao_Paulo').toISO() }) }}"}}},
+    {"type": "setNodeSettings", "nodeName": "Liberar Lock", "settings": {"executeOnce": True}},
+    # --- transferência + nota interna ------------------------------------------------
+    {"type": "updateNodeParameters", "nodeName": "If", "replace": True,
+     "parameters": cond("={{ $('Pós-processador').first().json.precisa_transferir }}", "true")},
+    {"type": "setNodeParameter", "nodeName": "Transferencia", "path": "/jsonBody",
+     "value": "={\n  \"queueId\": {{ Number($('Pós-processador').first().json.queueId) }}\n}"},
+    {"type": "setNodeSettings", "nodeName": "Transferencia",
+     "settings": {"retryOnFail": True, "maxTries": 3, "waitBetweenTries": 2000, "onError": "continueRegularOutput"}},
+    {"type": "addNode", "node": {"name": "Montar Nota Interna", "type": "n8n-nodes-base.code", "typeVersion": 2,
+        "position": [8848, 752], "parameters": {"jsCode": code("montar_nota_interna.js")}}},
+    {"type": "addConnection", "source": "Transferencia", "target": "Montar Nota Interna"},
+]
+
+lote3 = [{"type": "setNodeParameter", "nodeName": "Sofia", "path": "/options/systemMessage", "value": sys_sofia}]
+
+if __name__ == "__main__":
+    lote = {"1": lote1, "2": lote2, "3": lote3}[sys.argv[1]]
+    print(json.dumps(lote, ensure_ascii=False))

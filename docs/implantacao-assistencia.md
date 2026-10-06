@@ -30,6 +30,8 @@ DeskRio ──webhook──▶ n8n (borda fina)
 | `sql/at/05_v1_leitura_escrita.sql` | funções v1 de leitura e escrita da máquina |
 | `sql/at/06_objecoes_e_detalhes.sql` | biblioteca de 8 objeções como dado; detalhes técnicos por serviço |
 | `sql/at/07_resumo_dia_followup.sql` | `v1_resumo_dia()`, candidatos de follow-up com lembrete de visita |
+| `sql/at/08_preco_fixo_condicoes.sql` | preço fixo, entrada R$ 240 + até 18x no boleto, fatos confirmados, filas 64000523 |
+| `sql/at/09_memoria_sofia.sql` | tabela da memória da Sofia (Postgres Chat Memory), com RLS |
 
 `sql/at/03_funcoes.sql` são as funções de decisão em SQL da primeira tentativa (`montar_contexto`, `registrar_turno`, …).
 **Não usar.** Ficaram no banco sem uso; remover quando autorizado:
@@ -81,12 +83,31 @@ A máquina não acessa banco nem LLM, então não tem `.env`. Usa `mem_limit: 12
 Toda mudança na máquina: `pytest`, reempacotar, `docker compose build maquina && docker compose up -d maquina`
 (o `COPY` embute o código na imagem; trocar o arquivo no disco não basta).
 
-## 3. n8n — fluxo de teste primeiro (núcleo isolado, padrão Lívia)
+## 3. n8n — fluxo "Senhor smart - novo" (dLwpCiaonSWavJLj)
 
-`Webhook → Filtra → Mensagem → Carregar Estado + Catálogo → Extrair Intenção → Carregar Contexto → Máquina de Estado → Atualizar Estado`
-sem buffer, sem envio. Testar com tickets forjados (99xxxxxx) antes de plugar os blocos de narrador, envio e transferência.
+O Python do Code node não roda nesta instância (sem task runner externo), então a máquina fica no droplet e o n8n chama por HTTP.
 
-Payload do node **Máquina de Estado**:
+Religado do buffer em diante (rascunho; a versão publicada só muda com **Publish**):
+
+```
+Mensagem → Carregar Estado + Catálogo → Extrair Intenção → Carregar Contexto → Máquina de Estado
+  ├─ erro da máquina → Liberar próxima mensagem do cliente (solta o lock)
+  └─ Dedup OK? ─ duplicata → Liberar próxima mensagem do cliente
+               └─ Sofia (+ GPT 4.1 mini, Memória Sofia) → Montar Log do Turno → Registrar Turno e Métricas
+                  → Pós-processador → Loop Mensagens → Enviar resposta da IA (já existia)
+                  → (fim do loop) Atualizar Estado → Liberar Lock → If → Transferencia → Montar Nota Interna → Enviar Nota Interna
+```
+
+- O código de cada nó está em `n8n/atendimento/` e as operações saem de `n8n/atendimento/build_ops.py`
+  (lê `prompts/*.md` e os `.js`). Mudou prompt ou script: regerar e aplicar, nunca editar só no n8n.
+- `Registrar Turno e Métricas` substitui os dois logs antigos (`log_interacao` e `upsert_atendimento_log`):
+  uma chamada a `v1_registrar_turno` grava `atendimento`, `evento_funil` e `turno_log`.
+- O estado é gravado **antes** de soltar o lock, para a próxima mensagem já ler o estado novo.
+- Transferência e nota interna usam `conducao.transferir_para` (64000523 na base de teste). A nota sai de
+  `conducao.resumo_encaminhamento`, sem IA.
+- Rollback: restaurar a versão `339bd8c3-1b5e-4ddb-a605-2bc77aa5bdbc` no histórico do fluxo.
+
+Payload do node **Máquina de Estado** (o mesmo de `n8n/atendimento/expr_maquina.js`):
 
 ```json
 {
@@ -119,17 +140,21 @@ Payload do **Registrar Turno**: `{ metricas: <saída da máquina>.metricas, tele
 
 ## 5. Pendências que dependem da loja
 
-1. **Preços reais.** As 43 faixas são estimativa de mercado (`preco_referencia.validado = false`). Trocar pelas da loja.
-2. **Fatos a confirmar** (a IA não afirma enquanto `confirmado = false`): avaliação sem custo, cliente aprova antes do conserto,
-   a faixa inclui peça e mão de obra, troca de tela/bateria/conector não apaga dados, conserto acompanhado na loja,
-   formas de pagamento, prazo padrão, leva e traz. Cada um confirmado vira argumento nas objeções.
-3. **Filas do DeskRio** para técnico, vendas e humano (hoje as três apontam para 64000384, a fila do bot antigo).
+1. **Preços reais.** O preço é fixo (`preco_referencia.preco`), mas os valores ainda são estimativa de teste. Trocar pelos da loja.
+2. **Fatos ainda a confirmar** (a IA não afirma enquanto `confirmado = false`): o valor inclui peça e mão de obra,
+   troca de tela/bateria/conector não apaga dados, conserto acompanhado na loja, formas de pagamento além do boleto,
+   prazo padrão, leva e traz. Já confirmados: avaliação sem custo (no horário da loja), aprovação antes do conserto,
+   entrada R$ 240 + até 18x no boleto.
+3. **Filas do DeskRio**: técnico, vendas e humano apontam para 64000523 (base de teste). Separar quando for para produção.
 4. **Mensagens prontas por campanha** no Google Ads (ex.: "Olá! Vim pelo Google e quero um orçamento"), para separar Google de Meta no painel, como a TX faz.
 5. **Template Meta** aprovado para o reengajamento de 72h.
 6. **Registro de fechamento** pelo vendedor (`registrar_desfecho`: na_loja / os_aberta / fechado com valor / perdido com motivo). Sem isso não há receita no resumo.
 
-## 6. Limitações conhecidas (v1.1)
+## 6. Limitações conhecidas (v1.2)
 
 - Um trabalho por tipo de aparelho na conversa: dois celulares diferentes do mesmo cliente viram um só (o segundo exige humano).
 - Um serviço por aparelho: "tela trincada e não carrega" cota a tela; o conector aparece na avaliação.
 - O narrador não foi rodado contra o modelo real nesta sessão (sem chave do OpenRouter aqui). Os exemplos do prompt usam conducao real da máquina; a bateria E2E é no fluxo de teste.
+- Foto: o nó de visão antigo (antes do buffer) só devolve `tipo` e `descricao`; a descrição entra no texto e o extrator lê.
+  `foto` vai `null` para a máquina até o nó de visão usar `prompts/visao.md` (categoria, marca, modelo, danos).
+- Tokens e custo no `turno_log` são só do extrator; o AI Agent do n8n não expõe o uso do narrador.

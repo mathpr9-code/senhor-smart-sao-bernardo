@@ -113,6 +113,7 @@ def _estado_inicial() -> dict:
         "etapa_max": "novo",
         "transferido": False,
         "encerrado": False,
+        "ultima_pergunta": None,        # coletar.dado do turno anterior (o extrator le, ex.: "nome")
         "_ultima_mensagem_texto": None,
         "_ultima_mensagem_data": None,
     }
@@ -726,6 +727,7 @@ def _finalizar(estado: dict, c: dict, ctx: dict, entrada: dict, duplicata: bool 
     if not duplicata:
         estado["_ultima_mensagem_texto"] = entrada.get("mensagem_texto")
         estado["_ultima_mensagem_data"] = entrada.get("mensagem_data")
+        estado["ultima_pergunta"] = (c.get("coletar") or {}).get("dado")
         if c.get("saudar"):
             estado["abertura_feita"] = True
         etapa = _calcular_etapa(estado)

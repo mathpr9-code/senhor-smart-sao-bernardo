@@ -15,6 +15,7 @@ class Entrada(BaseModel):
     foto: Optional[dict] = None               # saida do no de visao, quando houve imagem
     contexto_dados: Optional[dict] = None     # recorte do Carregar Contexto
     agora: Optional[str] = None               # ISO8601
+    nome_whatsapp: Optional[str] = None       # body.contact.name — pode vir emoji
     mensagem_texto: Optional[str] = None      # body.lastMessage — duplicata
     mensagem_data: Optional[str] = None       # body.lastMessageDate — duplicata
     anuncio: Optional[str] = None             # titulo do anuncio (click-to-WhatsApp)

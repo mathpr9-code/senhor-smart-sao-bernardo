@@ -19,12 +19,9 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - estado-net
       - caddy-net                          # obrigatória: é onde vive o Caddy
 
 networks:
-  estado-net:
-    external: true
   caddy-net:
     external: true
     name: agnes-estado_default             # nome real da rede do Caddy (não mude)
